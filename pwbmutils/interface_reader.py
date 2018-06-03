@@ -11,7 +11,7 @@ import sys
 from distutils.dir_util import copy_tree
 
 import luigi
-from pwbm_task import PWBMTask
+from .pwbm_task import PWBMTask
 
 # pylint: disable=E1136
 

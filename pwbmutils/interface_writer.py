@@ -12,7 +12,7 @@ import subprocess
 
 import luigi
 
-from pwbm_task import PWBMTask
+from .pwbm_task import PWBMTask
 
 # pylint: disable=E1101
 
