@@ -10,5 +10,8 @@ setup(
     url="https://github.com/PennWhartonBudgetModel/Utilities",
     author="Penn Wharton Budget Model",
     packages=["pwbmutils"],
-    zip_safe=False
+    zip_safe=False,
+    test_suite="nose.collector",
+    install_requires=["luigi", "pandas"],
+    test_requires=["nose"]
 )
