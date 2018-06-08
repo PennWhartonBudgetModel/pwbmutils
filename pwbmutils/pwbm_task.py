@@ -19,7 +19,7 @@ task, you can also set these in your luigi configuration file.
 import logging
 import json
 import os
-from os.path import exists
+from os.path import exists, join
 import random
 import shutil
 from shutil import copytree
@@ -126,6 +126,13 @@ class PWBMTask(luigi.Task):
         else:
             # default to the task family
             self.job_name = self.task_family
+
+
+    def output(self):
+        """Default output method writes to cache location.
+        """
+
+        return luigi.LocalTarget(join(self.cache_location, self.task_id))
 
 
     @classmethod
