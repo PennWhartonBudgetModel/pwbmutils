@@ -5,9 +5,11 @@ import os
 from unittest import TestCase
 
 import luigi
+import numpy
 import pandas
 
 import pwbmutils
+import pwbmutils.statistics
 
 class TestUtils(TestCase):
     """Collection of basic tests of utilities.
@@ -73,3 +75,45 @@ class TestUtils(TestCase):
 
         self.assertTrue(len(projections) > 0)
     
+    def test_statistics(self):
+        """Test whether the interface writer writes out successfully.
+        """
+
+        dataset = pandas.DataFrame({
+            "Year": [1996, 1997, 1998, 1999, 2000],
+            "Value": [0, 1, 1, 0, 0]
+        })
+
+        linear_model = pwbmutils.statistics.LinearRegression(
+            "Value~Year",
+            data=dataset
+        )
+
+        self.assertTrue(
+            numpy.sum(
+                numpy.abs(
+                    linear_model.predict(dataset) \
+                    - numpy.array([0.6, 0.5, 0.4, 0.3, 0.2])
+                )
+            ) < 10e-6
+        )
+
+        logit_model = pwbmutils.statistics.LogitRegression(
+            "Value~Year",
+            data=dataset
+        )
+
+        self.assertTrue(
+            numpy.sum(
+                numpy.abs(
+                    logit_model.predict(dataset) \
+                    - numpy.array([
+                        0.60717446,
+                        0.49898785,
+                        0.39089593,
+                        0.29254677,
+                        0.210395
+                    ])
+                )
+            ) < 10e-6
+        )
