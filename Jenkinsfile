@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('tests') {
             steps {
-                sh 'python3 -m unittest pwbmutils.tests.test'
+                sh 'python3 -m unittest pwbmutils.test'
             }
         }
     }
