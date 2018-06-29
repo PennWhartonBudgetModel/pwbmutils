@@ -15,9 +15,23 @@ from .pwbm_task import PWBMTask
 
 # pylint: disable=E1136
 
-
 class InterfaceReader(PWBMTask):
-    """Cached requested interfaces locally.
+    """Task reads from the HPCC server, using a Windows-specific path if on a
+    Windows machine, and otherwise from a local HPCC directory if on a linux
+    machine, caches it locally, and points to the result.
+    
+    Arguments:
+        DictParameter {interface_info} -- Dictionary of information about the
+        interface. Example format:
+        ```
+        {
+            "version": "2018-06-29-07-30-njanetos-afa66a3",
+            "component": "Microsim",
+            "interface": "series"
+        }
+        ```
+
+        Parameter {filename} -- Optional filename to get from interface.
     """
 
     interface_info = luigi.DictParameter(
@@ -72,6 +86,7 @@ class InterfaceReader(PWBMTask):
     def requires(self):
         # nothing, will fail if external file does not exist
         return []
+
 
     def work(self):
 
