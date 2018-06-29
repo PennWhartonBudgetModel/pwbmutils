@@ -1,4 +1,5 @@
-"""Init script for package.
+"""pwbmutils package contains extensions of luigi tasks extended for use on
+HPCC job submission system.
 """
 
 from .interface_reader import InterfaceReader
