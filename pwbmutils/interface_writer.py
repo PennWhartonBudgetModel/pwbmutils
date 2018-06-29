@@ -20,7 +20,7 @@ class InterfaceWriter(PWBMTask):
     """Task for creating stamped runs that are copied to the HPCC, available to
     other components.
     
-    Arguments:
+    Parameters:
         BoolParameter {stamp} -- True, to perform a stamped run.
         TaskParameter {output_task} -- Luigi task to copy up to HPCC.
         Parameter {name_of_component} -- The name of the component to copy to.

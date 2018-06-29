@@ -20,17 +20,16 @@ class InterfaceReader(PWBMTask):
     Windows machine, and otherwise from a local HPCC directory if on a linux
     machine, caches it locally, and points to the result.
     
-    Arguments:
+    Parameters:
         DictParameter {interface_info} -- Dictionary of information about the
-        interface. Example format:
-        ```
-        {
-            "version": "2018-06-29-07-30-njanetos-afa66a3",
-            "component": "Microsim",
-            "interface": "series"
-        }
-        ```
-
+            interface. Example format:
+            ```
+            {
+                "version": "2018-06-29-07-30-njanetos-afa66a3",
+                "component": "Microsim",
+                "interface": "series"
+            }
+            ```
         Parameter {filename} -- Optional filename to get from interface.
     """
 
