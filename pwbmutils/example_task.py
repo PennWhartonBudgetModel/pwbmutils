@@ -1,4 +1,4 @@
-"""Contains luigi class for interfacing with external component interfaces.
+"""Contains sample luigi task illustrating the use of PWBMTask.
 """
 
 __author__ = "Nick Janetos"
@@ -9,25 +9,13 @@ from os.path import exists, join
 
 import pandas
 
-import luigi
 import pwbmutils
 
 # pylint: disable=E1101, E1136
 
 class ExampleTask(pwbmutils.PWBMTask):
-    """Cached requested interfaces locally.
+    """Example task illustrates the use of PWBM task.
     """
-
-    def output(self):
-        """Output location.
-        """
-
-        return luigi.LocalTarget(
-            join(
-                self.cache_location,
-                self.task_id
-            )
-        )
 
 
     def requires(self):

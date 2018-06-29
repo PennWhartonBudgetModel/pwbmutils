@@ -17,8 +17,19 @@ from .pwbm_task import PWBMTask
 # pylint: disable=E1101
 
 class InterfaceWriter(PWBMTask):
-    """Contains luigi class writing to the HPCC and creating 'stamped' runs.
+    """Task for creating stamped runs that are copied to the HPCC, available to
+    other components.
+
+    Parameters:
+        BoolParameter {stamp} -- True, to perform a stamped run.
+        TaskParameter {output_task} -- Luigi task to copy up to HPCC.
+        Parameter {name_of_component} -- The name of the component to copy to.
+        Parameter {name_of_interface} -- The name of the interface to copy to.
+
+    Raises:
+        Exception -- Thrown if uncommitted changes in repository.
     """
+
 
     stamp = luigi.BoolParameter(
         default=False,

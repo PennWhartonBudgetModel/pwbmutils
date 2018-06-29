@@ -53,30 +53,28 @@ def get_config_value(key):
 
 
 class PWBMTask(luigi.Task):
-    """Base class for executing a job on SunGrid Engine
+    """Base class for luigi methods. Allows for easy parallelization of tasks
+    both locally, on Windows machines, and on the HPCC.
 
     Override ``work()`` (rather than ``run()``) with your job code.
 
     Parameters:
 
-    - n_cpu: Number of CPUs (or "slots") to allocate for the Task. This
-          value is passed as ``qsub -pe {pe} {n_cpu}``
-    - parallel_env: SGE parallel environment name. The default is "orte",
-          the parallel environment installed with MIT StarCluster. If you
-          are using a different cluster environment, check with your
-          sysadmin for the right pe to use. This value is passed as {pe}
-          to the qsub command above.
-    - shared_tmp_dir: Shared drive accessible from all nodes in the cluster.
-          Task classes and dependencies are pickled to a temporary folder on
-          this drive. The default is ``/home``, the NFS share location setup
-          by StarCluster
-    - job_name_format: String that can be passed in to customize the job name
-        string passed to qsub; e.g. "Task123_{task_family}_{n_cpu}...".
-    - job_name: Exact job name to pass to qsub.
-    - run_locally: Run locally instead of on the cluster.
-    - no_tarball: Don't create a tarball of the luigi project directory.  Can be
-        useful to reduce I/O requirements when the luigi directory is accessible
-        from cluster nodes already.
+    IntParameter {n_cpu} -- Number of CPUs (or "slots") to allocate for the
+        task. This value is passed as ``qsub -pe {pe} {n_cpu}``.
+    Parameter {parallel_env} -- SGE parallel environment name. The default is
+        "openmp", the parallel environment installed with the HPCC.
+    Parameter {shared_tmp_dir} -- Shared drive accessible from all nodes in the
+        cluster. Task classes and dependencies are pickled to a temporary
+        folder on this drive. The default is ``/home``, the NFS share location
+        setup by StarCluster
+    Parameter {job_name_format} -- String that can be passed in to customize the
+        job name string passed to qsub; e.g. "Task123_{task_family}_{n_cpu}...".
+    Parameter {job_name} -- Exact job name to pass to qsub.
+    BoolParameter {run_locally} -- Run locally instead of on the cluster.
+    BoolParameter {no_tarball} -- Don't create a tarball of the luigi project
+        directory. Can be useful to reduce I/O requirements when the luigi
+        directory is accessible from cluster nodes already.
     """
 
     n_cpu = luigi.IntParameter(default=1, significant=False)
