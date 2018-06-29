@@ -9,7 +9,6 @@ from os.path import exists, join
 
 import pandas
 
-import luigi
 import pwbmutils
 
 # pylint: disable=E1101, E1136
