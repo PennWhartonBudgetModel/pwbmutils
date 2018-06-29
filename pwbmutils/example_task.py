@@ -18,18 +18,6 @@ class ExampleTask(pwbmutils.PWBMTask):
     """Cached requested interfaces locally.
     """
 
-    def output(self):
-        """Output location.
-        """
-
-        return luigi.LocalTarget(
-            join(
-                self.cache_location,
-                self.task_id
-            )
-        )
-
-
     def requires(self):
         """Requires the interface reader.
         """
