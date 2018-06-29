@@ -19,7 +19,7 @@ class InterfaceReader(PWBMTask):
     """Task reads from the HPCC server, using a Windows-specific path if on a
     Windows machine, and otherwise from a local HPCC directory if on a linux
     machine, caches it locally, and points to the result.
-    
+
     Parameters:
         DictParameter {interface_info} -- Dictionary of information about the
             interface. Example format:
