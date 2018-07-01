@@ -1,5 +1,5 @@
-"""Contains luigi class writing to the HPCC and creating 'stamped' runs, of the
-output of a luigi task.
+"""Contains luigi class writing to the HPCC and creating 'stamped' runs, from
+an input folder.
 """
 
 __author__ = "Nick Janetos"
@@ -17,13 +17,13 @@ from .pwbm_task import PWBMTask
 
 # pylint: disable=E1101
 
-class InterfaceWriter(PWBMTask):
+class InterfaceDirectWriter(PWBMTask):
     """Task for creating stamped runs that are moved to the HPCC, available to
     other components.
 
     Parameters:
         BoolParameter {stamp} -- True, to perform a stamped run.
-        TaskParameter {output_task} -- Luigi task to copy up to HPCC.
+        TaskParameter {output_folder} -- Folder to copy up to HPCC.
         Parameter {name_of_component} -- The name of the component to copy to.
         Parameter {name_of_interface} -- The name of the interface to copy to.
 
@@ -37,14 +37,15 @@ class InterfaceWriter(PWBMTask):
         "uncommitted changes, and if none exist, will create a descriptive "
         "stamp and write to the HPCC server.")
 
-    output_task = luigi.TaskParameter(
-        description="Task to output to HPCC.")
+    output_folder = luigi.Parameter(
+        description="Folder to output to the HPCC.")
 
     path_to_hpcc = luigi.Parameter(
         default=r"\\hpcc-ppi.wharton.upenn.edu\ppi" \
             if sys.platform == "win32" \
             else "/home/mnt/projects/ppi",
-        description="Path to the HPCC.")
+        description="Path to the HPCC. Set by default to work on PWBM "
+        "computers.")
 
     name_of_component = luigi.Parameter(
         description="The component name.")
@@ -107,24 +108,17 @@ class InterfaceWriter(PWBMTask):
                 self.name_of_component,
                 "Interfaces",
                 stamp,
-                self.name_of_interface,
-                self.output_task.task_id
+                self.name_of_interface
             ))
 
         else:
 
-            return luigi.LocalTarget(
-                join(
-                    self.cache_location,
-                    "Interfaces",
-                    self.task_id,
-                    self.name_of_interface
-                )
-            )
+            return luigi.LocalTarget(self.output_folder)
 
 
     def requires(self):
-        return self.output_task
+        # will fail if output folder not found
+        return []
 
 
     def work(self):
@@ -136,6 +130,6 @@ class InterfaceWriter(PWBMTask):
 
         # move output directory to final directory
         shutil.move(
-            self.output_task.output().path,
+            self.output_folder,
             self.output().path
         )
