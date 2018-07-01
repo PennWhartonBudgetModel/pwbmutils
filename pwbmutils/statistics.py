@@ -1,4 +1,7 @@
-# pylint: disable=E1101
+"""Collection of convenience functions for statistical work.
+"""
+
+# pylint: disable=E1101, C0103
 
 from copy import copy
 import math
@@ -106,8 +109,7 @@ def weighted_quantile(values,
 
 
 def weighted_std(values, weights):
-    """
-    Return the weighted average and standard deviation.
+    """Return the weighted average and standard deviation.
 
     values, weights -- Numpy ndarrays with the same shape.
 
