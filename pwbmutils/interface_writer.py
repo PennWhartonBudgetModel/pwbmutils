@@ -1,4 +1,5 @@
-"""Contains luigi class writing to the HPCC and creating 'stamped' runs.
+"""Contains luigi class writing to the HPCC and creating 'stamped' runs, of the
+output of a luigi task.
 """
 
 __author__ = "Nick Janetos"
@@ -17,7 +18,7 @@ from .pwbm_task import PWBMTask
 # pylint: disable=E1101
 
 class InterfaceWriter(PWBMTask):
-    """Task for creating stamped runs that are copied to the HPCC, available to
+    """Task for creating stamped runs that are moved to the HPCC, available to
     other components.
 
     Parameters:
@@ -29,7 +30,6 @@ class InterfaceWriter(PWBMTask):
     Raises:
         Exception -- Thrown if uncommitted changes in repository.
     """
-
 
     stamp = luigi.BoolParameter(
         default=False,
@@ -62,7 +62,7 @@ class InterfaceWriter(PWBMTask):
 
         if self.stamp:
 
-            # check for uncommitted changes
+            # check for uncommitted changes and throw an exception if found
             result = subprocess.call([
                 "git",
                 "diff-index",
@@ -76,7 +76,10 @@ class InterfaceWriter(PWBMTask):
                     "run."
                 )
 
-            # Generate unique descriptive stamp for current commit
+            # generate unique descriptive stamp for current commit
+            # if running on the HPCC, this needs to be loaded from a stamp
+            # file, copied to local folder, since a copy is made for each task
+            # of the code and a file called 'stamp' placed in it
             if self.run_locally or not os.path.exists("stamp"):
                 get_commit_property = lambda s: subprocess.check_output(
                     "git --no-pager log -1 --format=%{}".format(s),
@@ -99,16 +102,14 @@ class InterfaceWriter(PWBMTask):
                 with open("stamp", 'r') as file_in:
                     stamp = file_in.read()
 
-            server_location = join(
+            return luigi.LocalTarget(join(
                 self.path_to_hpcc,
                 self.name_of_component,
                 "Interfaces",
                 stamp,
                 self.name_of_interface,
                 self.output_task.task_id
-            )
-
-            return luigi.LocalTarget(server_location)
+            ))
 
         else:
 
