@@ -246,9 +246,9 @@ class PWBMTask(luigi.Task):
                         logger.error(err.read())
 
             # delete the temporaries, if they're there.
-            if self.tmp_dir and os.path.exists(self.tmp_dir):
-                logger.info('Removing temporary directory %s', self.tmp_dir)
-                subprocess.call(["rm", "-rf", self.tmp_dir])
+            # if self.tmp_dir and os.path.exists(self.tmp_dir):
+            #     logger.info('Removing temporary directory %s', self.tmp_dir)
+            #     subprocess.call(["rm", "-rf", self.tmp_dir])
 
             # wait a beat, to give things a chance to settle
             time.sleep(5)
