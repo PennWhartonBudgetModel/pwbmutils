@@ -79,7 +79,7 @@ class PWBMTask(luigi.Task):
 
     n_cpu = luigi.IntParameter(default=1, significant=False)
 
-    shared_tmp_dir = luigi.Parameter(default=".tmp", significant=False)
+    shared_tmp_dir = luigi.Parameter(default="/home/bepp/njanetos/.tmp", significant=False)
 
     parallel_env = luigi.Parameter(default="openmp", significant=False)
 
