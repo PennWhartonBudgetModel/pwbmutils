@@ -7,7 +7,6 @@ __author__ = "Austin Herrick"
 __copyright__ = "Copyright 2018, Penn Wharton Budget Model"
 
 import warnings
-import json
 import os
 import sys
 import re
@@ -15,16 +14,15 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from statsmodels.stats.weightstats import DescrStatsW as stats
-from IPython.display import HTML
-import matplotlib.dates as mdates
+from pandas.api.types import is_numeric_dtype
 
-plt.style.use(['classic', 'pwbm.mplstyle')])
+import graphing.utilities
 
 def graphing_ready_dataframe(
 	df, 
 	demographic, 
 	interest_var,
-	moment_type='Frequency',
+	moment_type='Mean',
 	interest_value=1, 
 	weights=None, 
 	convert_to_annual=False,
@@ -51,7 +49,7 @@ def graphing_ready_dataframe(
 	# run assertions and warnings for misspecified inputs
 	moment_types = ['Frequency', 'Mean']
 	assert (moment_type in moment_types), 'Invalid Moment Type! Please choose one of {}'.format(moment_types)
-	assert (df[interest_var].dtype == 'float64' or df[interest_var].dtype == 'int64'), \
+	assert (is_numeric_dtype(df[interest_var])), \
 		'Dependent variable is non-numeric! Please convert dependent variable to an integer or float!'
 	if weights:
 		if len(df[df[weights].isnull()]) > 0:
@@ -71,7 +69,10 @@ def graphing_ready_dataframe(
 	labels = ['Value', 'Moment', 'StandardError']
 	
 	# collect possible values taken along the chosen dimension
-	values = sorted(df[demographic].unique())
+	try:
+		values = sorted(df[demographic].unique())
+	except TypeError:
+		values = df[demographic].unique()
 	
 	# build graphing dataframe
 	for value in values:
@@ -143,6 +144,9 @@ def visualization(
 	- save_location: When enabled, saves the created graph to a save location
 	- legend_location: The position on the graph to place the legend
 	'''
+
+	# load the style guide
+	plt.style.use(['classic', 'pwbm'])
 	
 	# if the user submits a single dataframe, converts to a list for standardized formatting
 	if type(result_list) == pd.core.frame.DataFrame:
@@ -152,9 +156,9 @@ def visualization(
 	if categorical:
 		if not categorical_coding:
 			warnings.warn(
-				'Warning: Categorical call includes no coding list, default ordering will be used. To \
-				specify a coding list, supply a list of each category in the order you want them to \
-				appear in your graph'
+				'Warning: Categorical call includes no coding list, default ordering will be used. To '
+				'specify a coding list, supply a list of each category in the order you want them to '
+				'appear in your graph'
 			)
 			categorical_coding = result_list[0].Value.unique().tolist()
 		else:
@@ -167,8 +171,8 @@ def visualization(
 				
 	if len(result_list) > 1:
 		if not label_list:
-			warnings.warn('Warning: No labels were provided! Legend will use default naming instead. Provide \
-			labels by submitting a list of strings for the legend')
+			warnings.warn('Warning: No labels were provided! Legend will use default naming instead. Provide '
+			'labels by submitting a list of strings for the legend')
 			
 			# construct default label list
 			label_list = []
@@ -179,12 +183,12 @@ def visualization(
 	f, ax = plt.subplots(1)
 	
 	if categorical:
-		graph_categorical(ax, categorical_coding, result_list, demographic, label_list)
+		graphing.utilities.graph_categorical(ax, categorical_coding, result_list, demographic, label_list)
 	else:
-		graph_non_categorical(result_list, demographic, legend_location, label_list)
+		graphing.utilities.graph_non_categorical(result_list, demographic, legend_location, label_list)
 	
 	# add title/subtitle
-	add_labels(
+	graphing.utilities.add_labels(
 		ax, 
 		result_list,
 		categorical,
@@ -207,189 +211,30 @@ def visualization(
 	# display figure
 	plt.show()
 
-def graph_categorical(ax, categorical_coding, result_list, demographic, label_list):
+
+def sample_dataset(df, column='HouseholdID', max_count=1000):
 	'''
-	Create plot for categorical graphs
+	Samples a subset a dataset, to create an abridged version
+
+	- df: The dataframe to abridge
+	- column: The group from which entries are chosen.
+	- max_count: The number of entries to draw
 	'''
 
-	# graph cateogrical information, using a specified order and containing error bars
-	width = 0.7 / len(result_list)
-	labels = categorical_coding
-	ind = np.arange(len(result_list[0]))
-	
-	# sequentially plot resuls from each dataframe
-	datasets = []
-	for i in range(len(result_list)):
-		moments = result_list[i].Moment.values.tolist()
-		std_errors = result_list[i].StandardError.values.tolist()
-		plot = ax.bar(ind + 0.2 + (width * i), moments, width, yerr = std_errors)
+	units = df[column].unique().tolist()
+	count = 0
+	sample_choices = []
+
+	while count < max_count:
 		
-		# create a holding list of all graphed data, to be used for legend creation
-		datasets.append(plot[0])
-		
-	ax.set_xlabel("{}".format(demographic), fontsize = 12)
-	ax.set_xticks(ind + 0.2 + 0.35)
-	ax.set_xticklabels(labels, fontsize = 9)
-	
-	# rotate labels for categories that are too long or have too many items
-	if len(labels) > 10:
-		plt.xticks(rotation = 45)
-		max_label_length = len(max(labels, key = len))
-		
-	# add legend, if multiple lines are being graphed
-	if len(result_list) > 1:
-		leg = plt.legend(
-			tuple(datasets),
-			label_list,
-			bbox_to_anchor = (-0.03, 1),
-			loc = 2,
-			fontsize = 9,
-			ncol = len(result_list)
-		)
+		if count % 100 == 0:
+			print('Sampling {}th entry....'.format(count))
 
-def graph_non_categorical(result_list, demographic, legend_location, label_list):
-	'''
-	Create plot for non-categorical graphs
-	'''
+		choice = np.random.choice(range(len(units)))
+		sample_choices.append(units[choice])
+		count += 1
+		del units[choice]
 
-	for dataframe in result_list:
-		plot = plt.plot(dataframe.Value, dataframe.Moment, label = '{}'.format(demographic))
+	sample = df[df[column].isin(sample_choices)]
 
-	# retrieve color cycler to match standard error bars to the original line's color scheme
-	color_cylcer = plt.rcParams['axes.prop_cycle'].by_key()['color']
-	
-	for i in range(len(result_list)):  
-		# adds confidence interval bars to line graphs
-		plt.plot(
-			result_list[i].Value,
-			result_list[i].Moment + (result_list[i].StandardError * 1.96),
-			label = '{}'.format(demographic),
-			linestyle = ':',
-			color = color_cylcer[i],
-			linewidth = 2.4
-		)
-		plt.plot(
-			result_list[i].Value,
-			result_list[i].Moment - (result_list[i].StandardError * 1.96),
-			label = '{}'.format(demographic),
-			linestyle = ':',
-			color = color_cylcer[i],
-			linewidth = 2.4
-		)
-	
-	# add legend
-	if len(result_list) > 1:
-		if legend_location:
-			leg = plt.legend(
-				label_list, 
-				loc = legend_location,
-				fontsize = 9,
-				ncol = len(result_list)
-			)
-		else:
-			leg = plt.legend(
-				label_list, 
-				bbox_to_anchor = (-0.03, 1),
-				loc = 2,
-				fontsize = 9,
-				ncol = len(result_list)
-			)
-
-def add_labels(
-		ax,
-		result_list,
-		categorical,
-		moment_type, 
-		subtitle, 
-		max_line_length, 
-		interest_var, 
-		demographic, 
-		custom_title,
-		custom_axis
-	):
-	'''
-	Add title, subtitle, and y-axis labelling to the graph
-	'''
-
-	# set boundary conditions
-	y_lim_min = 0
-	# adjust height of graph relative to largest number to be graphed
-	y_lim_max = max([i.Moment.max() for i in result_list]) * 1.2
-	graph_height = y_lim_max - y_lim_min
-	
-	# controls boundaries when line graphs are displayed (important for datetime functionality)
-	if categorical:
-		x_adjuster = 0
-	else:
-		x_adjuster = min([i.Value.min() for i in result_list])
-
-	# handle y-axis formatting
-	ax.set_ylim(y_lim_min, y_lim_max)
-	if custom_axis: 
-		ax.set_ylabel(custom_axis, fontsize = 14)
-	else:
-		ax.set_ylabel('{} of {}'.format(moment_type, interest_var), fontsize = 14)
-
-	# add subtitle
-	if subtitle:
-		# parse user-submitted subtitle, adding line breaks as needed
-		parsed_subtitle, line_count = parse_subtitle(subtitle, max_line_length)
-		ax.text(
-			x = x_adjuster,
-			y = y_lim_max + (graph_height * 0.05),
-			s = parsed_subtitle,
-			fontsize = 15,
-			alpha = 0.5
-		)
-	else:
-		line_count = 0 
-
-	# add title
-	if custom_title:
-		title = custom_title
-	else:
-		title = "{} frequency by {}".format(interest_var, demographic)  
-	
-	ax.text(
-		x = x_adjuster,
-		y = y_lim_max + (graph_height * ((0.04 * line_count) + 0.07)),
-		s = title,
-		fontsize = 18,
-		weight = 'bold'
-	)
-
-
-def parse_subtitle(subtitle, max_line_length = 80):
-	'''
-	Uses string comprehension to add linebreaks into user-submitted subtitles.
-	
-	- subtitle: A string containing the text to be used as the subtitle
-	- max_line_length: An integer specifying the maximum line length
-	'''
-	
-	# split the submitted subtitle by individual words, and initialize the parsed subtitle
-	word_list = subtitle.split()
-	parsed_text = word_list[0]
-	original_line_length = max_line_length
-	
-	# verify that no single word exceeds the max line length
-	longest_word = max(word_list, key=len)
-	if len(longest_word) > max_line_length:
-		max_line_length = len(longest_word)
-		warnings.warn('Single word "{}" exceeds default maximum line length, extending max length to {}'.format(longest_word, max_line_length))
-	
-	# for each word, add it to the parsed subtitle unless it would create a line longer than the cutoff
-	for word in word_list[1:]:
-		tentative = parsed_text + ' ' + word
-		if len(tentative) < max_line_length:
-			parsed_text = tentative
-			
-		# when a line is too long, create a newline character and increment the cutoff
-		else:
-			max_line_length += original_line_length
-			parsed_text = parsed_text + '\n' + word
-			
-	# count the number of lines in the subtitle, in order to ensure proper title spacing
-	line_count = len(re.findall('\n', parsed_text)) + 1
-			
-	return parsed_text, line_count
+	return sample
