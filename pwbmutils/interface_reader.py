@@ -37,7 +37,7 @@ class InterfaceReader(PWBMTask):
         description="Dictionary of information about the interface")
 
     filename = luigi.Parameter(
-        default=None,
+        default="",
         description="Optional filename to get from interface")
 
     path_to_hpcc = luigi.Parameter(
@@ -69,14 +69,14 @@ class InterfaceReader(PWBMTask):
                 interface
             )
 
-            if self.filename is None:
+            if self.filename == "":
                 return luigi.LocalTarget(join(destination_folder))
             else:
                 return luigi.LocalTarget(join(destination_folder, self.filename))
 
         else:
 
-            if self.filename is None:
+            if self.filename == "":
                 return luigi.LocalTarget(join(server_location))
             else:
                 return luigi.LocalTarget(join(server_location, self.filename))
@@ -114,7 +114,7 @@ class InterfaceReader(PWBMTask):
             if not exists(destination_folder):
                 makedirs(destination_folder)
 
-            if self.filename is not None:
+            if self.filename == "":
 
                 file_location = join(
                     server_location,

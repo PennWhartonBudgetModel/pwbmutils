@@ -13,7 +13,9 @@ import pandas
 import patsy
 from scipy.stats import norm
 from statsmodels.regression.linear_model import WLS
+numpy.warnings.filterwarnings("ignore")
 from statsmodels.api import GLM
+numpy.warnings.resetwarnings()
 from statsmodels.genmod.families import Binomial
 from statsmodels.formula.api import mnlogit
 from statsmodels.genmod.families.links import logit
