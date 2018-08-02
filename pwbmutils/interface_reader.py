@@ -114,7 +114,7 @@ class InterfaceReader(PWBMTask):
             if not exists(destination_folder):
                 makedirs(destination_folder)
 
-            if self.filename == "":
+            if self.filename != "":
 
                 file_location = join(
                     server_location,
