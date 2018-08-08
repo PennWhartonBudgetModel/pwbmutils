@@ -99,6 +99,8 @@ def graph_non_categorical(result_list, demographic, legend_location, legend_font
 				ncol = len(result_list)
 			)
 
+	ax.set_xlabel("{}".format(demographic), fontsize = 12)
+
 def add_labels(
 		ax,
 		result_list,
@@ -137,7 +139,17 @@ def add_labels(
 	# add subtitle
 	if subtitle:
 		# parse user-submitted subtitle, adding line breaks as needed
-		parsed_subtitle, line_count = parse_subtitle(subtitle, max_line_length)
+		parsed_subtitle, subtitle_line_count = parse_text(subtitle, max_line_length)
+	else:
+		subtitle_line_count = 0 
+
+	# add title
+	if custom_title:
+		title, title_line_count = parse_text(custom_title, max_line_length)
+	else:
+		title = "{} {} by {}".format(interest_var, moment_type, demographic)  
+	
+	if subtitle:
 		ax.text(
 			x = x_adjuster,
 			y = y_lim_max + (graph_height * 0.05),
@@ -145,34 +157,26 @@ def add_labels(
 			fontsize = 15,
 			alpha = 0.5
 		)
-	else:
-		line_count = 0 
-
-	# add title
-	if custom_title:
-		title = custom_title
-	else:
-		title = "{} {} by {}".format(interest_var, moment_type, demographic)  
 	
 	ax.text(
 		x = x_adjuster,
-		y = y_lim_max + (graph_height * ((0.04 * line_count) + 0.07)),
+		y = y_lim_max + (graph_height * ((0.04 * (subtitle_line_count + title_line_count) + 0.07)),
 		s = title,
 		fontsize = 18,
 		weight = 'bold'
 	)
 
 
-def parse_subtitle(subtitle, max_line_length = 80):
+def parse_text(text, max_line_length = 80):
 	'''
 	Uses string comprehension to add linebreaks into user-submitted subtitles.
 	
-	- subtitle: A string containing the text to be used as the subtitle
+	- text: A string containing the text to be used as the text
 	- max_line_length: An integer specifying the maximum line length
 	'''
 	
-	# split the submitted subtitle by individual words, and initialize the parsed subtitle
-	word_list = subtitle.split()
+	# split the submitted text by individual words, and initialize the parsed text
+	word_list = text.split()
 	parsed_text = word_list[0]
 	original_line_length = max_line_length
 	
@@ -182,7 +186,7 @@ def parse_subtitle(subtitle, max_line_length = 80):
 		max_line_length = len(longest_word)
 		warnings.warn('Single word "{}" exceeds default maximum line length, extending max length to {}'.format(longest_word, max_line_length))
 	
-	# for each word, add it to the parsed subtitle unless it would create a line longer than the cutoff
+	# for each word, add it to the parsed text unless it would create a line longer than the cutoff
 	for word in word_list[1:]:
 		tentative = parsed_text + ' ' + word
 		if len(tentative) < max_line_length:
@@ -193,7 +197,7 @@ def parse_subtitle(subtitle, max_line_length = 80):
 			max_line_length += original_line_length
 			parsed_text = parsed_text + '\n' + word
 			
-	# count the number of lines in the subtitle, in order to ensure proper title spacing
+	# count the number of lines in the text, in order to ensure proper title spacing
 	line_count = len(re.findall('\n', parsed_text)) + 1
 			
 	return parsed_text, line_count
