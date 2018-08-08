@@ -124,7 +124,7 @@ def visualization(
 	max_line_length=80,
 	save_location=None,
 	legend_location=None,
-	legend_text_size=9
+	legend_font_size=9
 ):
 	'''
 	Visualize a function. Create bar/line graphs for one data series, without comparison to another
