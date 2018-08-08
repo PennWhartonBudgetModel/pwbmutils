@@ -123,7 +123,8 @@ def visualization(
 	subtitle=None,
 	max_line_length=80,
 	save_location=None,
-	legend_location=None
+	legend_location=None,
+	legend_text_size=9
 ):
 	'''
 	Visualize a function. Create bar/line graphs for one data series, without comparison to another
@@ -143,6 +144,7 @@ def visualization(
 	- max_line_length: Changes the default line length before a line break is created for subtitle formatting
 	- save_location: When enabled, saves the created graph to a save location
 	- legend_location: The position on the graph to place the legend
+	- legend_text_size: Adjusts the size of the text in the legend
 	'''
 
 	# load the style guide
@@ -185,7 +187,13 @@ def visualization(
 	if categorical:
 		graphing.utilities.graph_categorical(ax, categorical_coding, result_list, demographic, label_list)
 	else:
-		graphing.utilities.graph_non_categorical(result_list, demographic, legend_location, label_list)
+		graphing.utilities.graph_non_categorical(
+			result_list, 
+			demographic, 
+			legend_location, 
+			legend_font_size, 
+			label_list
+		)
 	
 	# add title/subtitle
 	graphing.utilities.add_labels(
