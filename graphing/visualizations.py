@@ -188,6 +188,7 @@ def visualization(
 		graphing.utilities.graph_categorical(ax, categorical_coding, result_list, demographic, label_list)
 	else:
 		graphing.utilities.graph_non_categorical(
+			ax,
 			result_list, 
 			demographic, 
 			legend_location, 

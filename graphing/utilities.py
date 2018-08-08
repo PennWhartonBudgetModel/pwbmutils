@@ -51,7 +51,7 @@ def graph_categorical(ax, categorical_coding, result_list, demographic, label_li
 			ncol = len(result_list)
 		)
 
-def graph_non_categorical(result_list, demographic, legend_location, legend_font_size, label_list):
+def graph_non_categorical(ax, result_list, demographic, legend_location, legend_font_size, label_list):
 	'''
 	Create plot for non-categorical graphs
 	'''
