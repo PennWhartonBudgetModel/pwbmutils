@@ -160,7 +160,7 @@ def add_labels(
 	
 	ax.text(
 		x = x_adjuster,
-		y = y_lim_max + (graph_height * ((0.04 * (subtitle_line_count + title_line_count) + 0.07)),
+		y = y_lim_max + (graph_height * (0.04 * (subtitle_line_count + title_line_count) + 0.07)),
 		s = title,
 		fontsize = 18,
 		weight = 'bold'
