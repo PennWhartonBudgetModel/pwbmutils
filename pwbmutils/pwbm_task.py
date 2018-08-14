@@ -245,17 +245,17 @@ class PWBMTask(luigi.Task):
                     with open(os.path.join(self.tmp_dir, "job.err"), "r") as err:
                         logger.error(err.read())
 
-            # delete the temporaries, if they're there.
-            if self.tmp_dir and os.path.exists(self.tmp_dir):
-                logger.info('Removing temporary directory %s', self.tmp_dir)
-                subprocess.call(["rm", "-rf", self.tmp_dir])
-
             # wait a beat, to give things a chance to settle
             time.sleep(5)
 
             # check whether the file exists
             if not os.path.exists(self.output().path):
                 raise Exception("qsub failed to produce output")
+            else:
+                # delete the temporaries, if they're there.
+                if self.tmp_dir and os.path.exists(self.tmp_dir):
+                    logger.info('Removing temporary directory %s', self.tmp_dir)
+                    subprocess.call(["rm", "-rf", self.tmp_dir])
 
     def work(self):
         """Override this method, rather than ``run()``,  for your actual work."""
