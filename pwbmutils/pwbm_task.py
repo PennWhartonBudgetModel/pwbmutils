@@ -166,6 +166,8 @@ class PWBMTask(luigi.Task):
             logger.info("Tmp dir: %s", self.tmp_dir)
             os.makedirs(self.tmp_dir)
 
+            copytree(".", os.path.join(self.tmp_dir))
+            
             # Dump the code to be run into a pickle file
             logging.debug("Dumping pickled class")
             self._dump(self.tmp_dir)
@@ -177,10 +179,6 @@ class PWBMTask(luigi.Task):
                 # Grab luigi and the module containing the code to be run
                 packages = [luigi] + [__import__(self.__module__, None, None, 'dummy')]
                 create_packages_archive(packages, os.path.join(self.tmp_dir, "packages.tar"))
-
-            copytree(os.path.join("engine"), os.path.join(self.tmp_dir, "engine"))
-            copytree(os.path.join("modules"), os.path.join(self.tmp_dir, "modules"))
-            shutil.copyfile("config.json", os.path.join(self.tmp_dir, "config.json"))
 
             # make a stamp indicator in the folder
             # generate unique descriptive stamp for current commit
