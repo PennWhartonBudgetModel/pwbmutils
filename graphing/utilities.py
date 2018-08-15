@@ -148,6 +148,7 @@ def add_labels(
 		title, title_line_count = parse_text(custom_title, max_line_length)
 	else:
 		title = "{} {} by {}".format(interest_var, moment_type, demographic)  
+		title, title_line_count = parse_text(title, max_line_length)
 	
 	if subtitle:
 		ax.text(

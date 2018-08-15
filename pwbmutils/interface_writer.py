@@ -51,6 +51,10 @@ class InterfaceWriter(PWBMTask):
 
     name_of_interface = luigi.Parameter(
         description="The name of the interface to write to.")
+    
+    hash_tag = luigi.BoolParameter(
+        default=False,
+        description="Flag for whether to write output under hashed luigi id.")
 
     def output(self):
         """If performing a stamped run, will write to HPCC. Otherwise, will
@@ -109,6 +113,12 @@ class InterfaceWriter(PWBMTask):
                 stamp,
                 self.name_of_interface,
                 self.output_task.task_id
+            )) if self.hash_tag else luigi.LocalTarget(join(
+                self.path_to_hpcc,
+                self.name_of_component,
+                "Interfaces",
+                stamp,
+                self.name_of_interface
             ))
 
         else:

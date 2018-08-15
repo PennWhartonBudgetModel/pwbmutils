@@ -79,7 +79,7 @@ class PWBMTask(luigi.Task):
 
     n_cpu = luigi.IntParameter(default=1, significant=False)
 
-    shared_tmp_dir = luigi.Parameter(default="/tmp", significant=False)
+    shared_tmp_dir = luigi.Parameter(default="/home/mnt/projects/ppi/.tmp", significant=False)
 
     parallel_env = luigi.Parameter(default="openmp", significant=False)
 
@@ -164,8 +164,10 @@ class PWBMTask(luigi.Task):
             max_filename_length = os.fstatvfs(0).f_namemax
             self.tmp_dir = self.tmp_dir[:max_filename_length]
             logger.info("Tmp dir: %s", self.tmp_dir)
-            os.makedirs(self.tmp_dir)
 
+            copytree(".", os.path.join(self.tmp_dir))
+            shutil.rmtree(os.path.join(self.tmp_dir, ".git"))
+            
             # Dump the code to be run into a pickle file
             logging.debug("Dumping pickled class")
             self._dump(self.tmp_dir)
@@ -177,10 +179,6 @@ class PWBMTask(luigi.Task):
                 # Grab luigi and the module containing the code to be run
                 packages = [luigi] + [__import__(self.__module__, None, None, 'dummy')]
                 create_packages_archive(packages, os.path.join(self.tmp_dir, "packages.tar"))
-
-            copytree(os.path.join("engine"), os.path.join(self.tmp_dir, "engine"))
-            copytree(os.path.join("modules"), os.path.join(self.tmp_dir, "modules"))
-            shutil.copyfile("config.json", os.path.join(self.tmp_dir, "config.json"))
 
             # make a stamp indicator in the folder
             # generate unique descriptive stamp for current commit
@@ -245,17 +243,17 @@ class PWBMTask(luigi.Task):
                     with open(os.path.join(self.tmp_dir, "job.err"), "r") as err:
                         logger.error(err.read())
 
-            # delete the temporaries, if they're there.
-            if self.tmp_dir and os.path.exists(self.tmp_dir):
-                logger.info('Removing temporary directory %s', self.tmp_dir)
-                subprocess.call(["rm", "-rf", self.tmp_dir])
-
             # wait a beat, to give things a chance to settle
             time.sleep(5)
 
             # check whether the file exists
             if not os.path.exists(self.output().path):
                 raise Exception("qsub failed to produce output")
+            else:
+                # delete the temporaries, if they're there.
+                if self.tmp_dir and os.path.exists(self.tmp_dir):
+                    logger.info('Removing temporary directory %s', self.tmp_dir)
+                    subprocess.call(["rm", "-rf", self.tmp_dir])
 
     def work(self):
         """Override this method, rather than ``run()``,  for your actual work."""
