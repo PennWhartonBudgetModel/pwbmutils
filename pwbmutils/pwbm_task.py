@@ -94,7 +94,7 @@ class PWBMTask(luigi.Task):
         default="",
         description="Explicit job name given via qsub.")
 
-    run_locally = luigi.BoolParameter(
+    run_locally = luigi.IntParameter(
         default=get_config_value("run_locally"),
         significant=False,
         description="Run locally instead of on the cluster.")
@@ -152,7 +152,7 @@ class PWBMTask(luigi.Task):
 
 
     def run(self):
-        if self.run_locally:
+        if self.run_locally == 1:
             return self.work()
         else:
 

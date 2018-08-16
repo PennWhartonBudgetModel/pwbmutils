@@ -134,6 +134,9 @@ class InterfaceWriter(PWBMTask):
 
 
     def requires(self):
+        """Requires the task to be output. Must be specified.
+        """
+
         return self.output_task
 
 
