@@ -108,7 +108,6 @@ class InterfaceTask(PWBMTask):
                 join(
                     self.cache_location,
                     "Interfaces",
-                    self.task_id,
                     self.name_of_interface
                 ),
                 self.public_parameters
