@@ -109,8 +109,8 @@ class TestUtils(TestCase):
         map_target = pwbmutils.MapTarget(
             "test_interface",
             {
-                "Param1": 2,
-                "Param2": 10
+                "Param1": 0,
+                "Param2": "cake"
             }
         )
 
@@ -131,12 +131,12 @@ class TestUtils(TestCase):
         map_target = pwbmutils.MapTarget(
             "test_interface",
             {
-                "Param1": 6,
-                "Param2": 1
+                "Param1": 2,
+                "Param2": "pie"
             }
         )
 
-        # map target should not exist
+        # map target should exist
         self.assertFalse(map_target.exists())
 
         # write to map target
@@ -145,6 +145,57 @@ class TestUtils(TestCase):
 
         # check that target exists
         self.assertTrue(map_target.exists())
+
+        # make another map target, with a different type signature
+        map_target = pwbmutils.MapTarget(
+            "test_interface",
+            {
+                "Param1": "cake",
+                "Param2": 4
+            }
+        )
+
+        # map target should throw TypeError
+        self.assertRaises(TypeError, map_target.exists)
+
+        # make a third and forth map target
+        map_target_1 = pwbmutils.MapTarget(
+            "test_interface",
+            {
+                "Param1": 20,
+                "Param2": "pie"
+            }
+        )
+
+        map_target_2 = pwbmutils.MapTarget(
+            "test_interface",
+            {
+                "Param1": 21,
+                "Param2": "cake"
+            },
+            max_timeout=4
+        )
+
+        # neither should exist
+        self.assertFalse(map_target_1.exists())
+        self.assertFalse(map_target_2.exists())
+
+        # begin to write out the first map target, implementing a lock
+        with map_target_1 as locking_out:
+
+            # try to write out the second map target, should fail
+            self.assertRaises(
+                luigi.parameter.ParameterException,
+                map_target_2.__enter__
+            )
+
+        # try again
+        with map_target_2 as out:
+            output.to_csv(os.path.join(out.tmp_dir, "test.csv"))
+        
+        # first target should not exist, second target should
+        self.assertFalse(map_target_1.exists())
+        self.assertTrue(map_target_2.exists())
 
 
     def test_statistics(self):
