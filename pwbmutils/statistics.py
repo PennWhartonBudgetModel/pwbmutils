@@ -342,7 +342,7 @@ class LinearRegression(object):
             self._model = WLS(y, X, **kwargs)
             self._fit = self._model.fit()
             self._betas = self._fit.params
-            self._std = numpy.std(data[self._model.data.ynames] - self._model.predict(data))
+            self._std = numpy.std(data[self._model.data.ynames].values - self.predict(data))
         else:
             self._y_design_info = None
             self._X_design_info = None
@@ -365,7 +365,7 @@ class LinearRegression(object):
 
     def draw(self, data, rand_engine):
 
-        return self.predict(data) + rand_engine
+        return self.predict(data) + rand_engine.normal(0, self._std)
 
     def to_pickle(self, filename):
 
