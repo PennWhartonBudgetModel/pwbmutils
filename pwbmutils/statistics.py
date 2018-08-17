@@ -369,17 +369,18 @@ class LinearRegression(object):
 
     def to_pickle(self, filename):
 
-        pickle.dump((self._y_design_info, self._X_design_info, self._betas),
+        pickle.dump((self._y_design_info, self._X_design_info, self._betas, self._std),
                     open(filename, "wb"))
 
     @staticmethod
     def read_pickle(filename):
-        y_design_info, X_design_info, betas = pickle.load(open(filename, "rb"))
+        y_design_info, X_design_info, betas, std = pickle.load(open(filename, "rb"))
 
         linear_regression = LinearRegression()
         linear_regression._y_design_info = y_design_info
         linear_regression._X_design_info = X_design_info
         linear_regression._betas = betas
+        linear_regression._std = std
 
         return linear_regression
 
