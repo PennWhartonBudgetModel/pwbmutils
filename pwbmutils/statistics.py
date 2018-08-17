@@ -342,12 +342,14 @@ class LinearRegression(object):
             self._model = WLS(y, X, **kwargs)
             self._fit = self._model.fit()
             self._betas = self._fit.params
+            self._std = numpy.std(data[self._model.data.ynames] - self._model.predict(data))
         else:
             self._y_design_info = None
             self._X_design_info = None
             self._model = None
             self._fit = None
             self._betas = None
+            self._std = None
 
     def __repr__(self):
         return str(self._fit.summary())
@@ -360,6 +362,10 @@ class LinearRegression(object):
         (X, ) = patsy.build_design_matrices([self._X_design_info], data)
 
         return linear_transform(numpy.asarray(X), self._betas)
+
+    def draw(self, data, rand_engine):
+
+        return self.predict(data) + rand_engine
 
     def to_pickle(self, filename):
 
