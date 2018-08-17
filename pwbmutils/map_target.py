@@ -13,32 +13,57 @@ import pandas
 
 logger = logging.getLogger('luigi-interface')
 
-
 class MapTarget(Target):
+    """Target which also maps itself for external consumption using a map file.
 
-    def __init__(self, base_path, params, map_name="map.csv", id_name="id"):
-        """
-        Initializes a FileSystemTarget instance.
+    Extends the notion of a file system target by also incorporating a parameter
+    value, which is stored in a map file, and used to retrieve the indexed file.
+    """
 
-        :param str path: the path associated with this FileSystemTarget.
-        :param dict params: the parameter set to write out to a map file.
+    def __init__(
+        self,
+        base_path,
+        params,
+        map_name="map.csv",
+        id_name="id",
+        max_timeout=2400
+    ):
+        """Initializes a new map target.
+        
+        Arguments:
+            base_path {str} -- The path to store the map file and subfolders.
+            params {dict} -- Dictionary of parameters to map. Must correspond to
+            the values in the map file already created, otherwise, an exception
+            will be raised.
+        
+        Keyword Arguments:
+            map_name {str} -- Name of the map file. (default: {"map.csv"})
+            id_name {str} -- Name of the id column in the map file. (default: {"id"})
+            max_timeout {int} -- Maximum number of seconds to wait for a lock to resolve. (default: {2400})
         """
+
         self.base_path = base_path
         self.params = params
         self.map_name = map_name
         self.id_name = id_name
         self.tmp_dir = None
         self.map = None
+        self.max_timeout = max_timeout
 
 
     def __enter__(self):
         # check for a lock file, if it exists, wait until it's gone to continue
-        while True:
-            if os.path.exists(os.path.join(self.base_path, "lock")):
-                time.sleep(1)
-            else:
+        time_waited = 0
+        while time_waited < self.max_timeout:
+            try:
                 os.makedirs(os.path.join(self.base_path, "lock"))
                 break
+            except FileExistsError:
+                time.sleep(1)
+                time_waited += 1
+
+        if time_waited == self.max_timeout:
+            raise luigi.parameter.ParameterException("Process exceeded max timeout.")
 
         # define a temporary directory using current date
         self.tmp_dir = os.path.join(
@@ -82,17 +107,21 @@ class MapTarget(Target):
         if os.path.exists(os.path.join(self.base_path, str(new_id))):
             shutil.rmtree(os.path.join(self.base_path, str(new_id)))
 
-        # move the temporary directory
-        os.rename(
-            self.tmp_dir,
-            os.path.join(self.base_path, str(new_id))
-        )
+        # if the temporary directory is non-empty, move it and write to the map
+        # file
+        if os.listdir(self.tmp_dir):
+            os.rename(
+                self.tmp_dir,
+                os.path.join(self.base_path, str(new_id))
+            )
 
-        # write the new map file out
-        self.map.to_csv(
-            os.path.join(self.base_path, self.map_name),
-            index=False
-        )
+            # write the new map file out
+            self.map.to_csv(
+                os.path.join(self.base_path, self.map_name),
+                index=False
+            )
+        else:
+            shutil.rmtree(self.tmp_dir)
 
         # lift the lock
         shutil.rmtree(os.path.join(self.base_path, "lock"))
