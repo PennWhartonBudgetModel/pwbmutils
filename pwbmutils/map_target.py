@@ -139,30 +139,3 @@ class MapTarget(Target):
         _id = _map[self.id_name].values[0]
 
         return os.path.exists(os.path.join(self.base_path, str(_id)))
-
-
-    def remove(self):
-        """Removes the entry from the map file, and deletes the target folder.
-        """
-
-        # make a copy of the map
-        _map = self.map.copy()
-
-        # identify the id
-        for key in self.params:
-            _map = _map[_map[key] == self.params[key]]
-
-        _id = _map[self.id_name].values[0]
-
-        # remove that folder, if it exists
-        if os.path.exists(os.path.join(self.base_path, str(_id))):
-            shutil.rmtree(os.path.join(self.base_path, str(_id)))
-
-        # remove the id from map
-        self.map = self.map[self.map[self.id_name] != _id]
-
-        # write it to the folder
-        self.map.to_csv(
-            os.path.join(self.base_path, self.map_name),
-            index=False
-        )
