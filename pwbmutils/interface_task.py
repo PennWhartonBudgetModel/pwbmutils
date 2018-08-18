@@ -21,7 +21,7 @@ from .map_target import MapTarget
 class InterfaceTask(PWBMTask):
 
     stamp = luigi.BoolParameter(
-        default=subprocess.call(["git", "diff-index", "--quiet", "HEAD", "--"]) not in [1, 128],
+        default=subprocess.call(["git", "diff-index", "--quiet", "HEAD", "--"]) not in [1, 128] or os.path.exists("stamp"),
         description="Whether to perform a stamped run. If true, will check for "
         "uncommitted changes, and if none exist, will create a descriptive "
         "stamp and write to the HPCC server.")
@@ -59,7 +59,7 @@ class InterfaceTask(PWBMTask):
                 "HEAD", "--"
             ])
 
-            if result not in [1, 128]:
+            if result == 1:
                 raise Exception(
                     "Uncommitted changes in repository, commit before stamped "
                     "run."
