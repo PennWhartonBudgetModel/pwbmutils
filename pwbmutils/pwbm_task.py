@@ -104,9 +104,13 @@ class PWBMTask(luigi.Task):
         default=True,
         description="Don't tarball (and extract) the luigi project files")
 
-    cache_location = luigi.Parameter(default=get_config_value("cache_location"))
+    cache_location = luigi.Parameter(
+        default=get_config_value("cache_location"),
+        significant=False)
 
-    qsub_command = luigi.Parameter(default=get_config_value("qsub_command"))
+    qsub_command = luigi.Parameter(
+        default=get_config_value("qsub_command"),
+        significant=False)
 
     _dependencies = luigi.IntParameter(default=0)
 
