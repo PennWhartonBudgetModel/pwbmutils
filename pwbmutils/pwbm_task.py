@@ -244,10 +244,10 @@ class PWBMTask(luigi.Task):
                         logger.error(err.read())
 
             # wait a beat, to give things a chance to settle
-            time.sleep(5)
+            time.sleep(2)
 
             # check whether the file exists
-            if not os.path.exists(self.output().path):
+            if not self.output().exists():
                 raise Exception("qsub failed to produce output")
             else:
                 # delete the temporaries, if they're there.
