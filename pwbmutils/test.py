@@ -111,7 +111,8 @@ class TestUtils(TestCase):
             {
                 "Param1": 0,
                 "Param2": "cake"
-            }
+            },
+            0
         )
 
         # map target should not exist
@@ -133,7 +134,8 @@ class TestUtils(TestCase):
             {
                 "Param1": 2,
                 "Param2": "pie"
-            }
+            },
+            1
         )
 
         # map target should exist
@@ -146,25 +148,14 @@ class TestUtils(TestCase):
         # check that target exists
         self.assertTrue(map_target.exists())
 
-        # make another map target, with a different type signature
-        map_target = pwbmutils.MapTarget(
-            "test_interface",
-            {
-                "Param1": "cake",
-                "Param2": 4
-            }
-        )
-
-        # map target should throw TypeError
-        self.assertRaises(TypeError, map_target.exists)
-
         # make a third and forth map target
         map_target_1 = pwbmutils.MapTarget(
             "test_interface",
             {
                 "Param1": 20,
                 "Param2": "pie"
-            }
+            },
+            3
         )
 
         map_target_2 = pwbmutils.MapTarget(
@@ -173,6 +164,7 @@ class TestUtils(TestCase):
                 "Param1": 21,
                 "Param2": "cake"
             },
+            4,
             max_timeout=4
         )
 

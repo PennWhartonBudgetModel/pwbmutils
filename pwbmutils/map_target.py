@@ -24,8 +24,10 @@ class MapTarget(Target):
         self,
         base_path,
         params,
+        hash_value,
         map_name="map.csv",
         id_name="id",
+        hash_name="hash",
         max_timeout=2400
     ):
         """Initializes a new map target.
@@ -48,6 +50,8 @@ class MapTarget(Target):
         self.id_name = id_name
         self.tmp_dir = None
         self.map = None
+        self.hash = hash_value
+        self.hash_name = hash_name
         self.max_timeout = max_timeout
 
 
@@ -101,6 +105,8 @@ class MapTarget(Target):
             k: [self.params[k]] for k in self.params
         })
         new_entry[self.id_name] = new_id
+        new_entry[self.hash_name] = self.hash
+
         self.map = self.map.append(new_entry)
         
         # remove the directory
@@ -146,12 +152,13 @@ class MapTarget(Target):
 
         # select the right row from the map file
         _map = self.map.copy()
-        for key in self.params:
-            if not key in _map:
-                raise luigi.parameter.ParameterException("Missing key %s in "
-                                                         "map file." % key)
-
-            _map = _map[_map[key] == self.params[key]].reset_index(drop=True)
+        try:
+            _map = _map[_map[self.hash_name] == self.hash]
+        except TypeError:
+            raise luigi.parameter.ParameterException(
+                "TypeError when retrieving map entry. Are you sure that you're "
+                "passing in the right hash?"
+            )
 
         # check that it uniquely identifies an id
         if len(_map) > 1:
