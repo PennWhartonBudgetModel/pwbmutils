@@ -99,7 +99,8 @@ class InterfaceTask(PWBMTask):
                     stamp,
                     self.name_of_interface
                 ),
-                self.public_parameters
+                self.public_parameters,
+                self.task_id
             )
 
         else:
@@ -110,5 +111,6 @@ class InterfaceTask(PWBMTask):
                     "Interfaces",
                     self.name_of_interface
                 ),
-                self.public_parameters
+                self.public_parameters,
+                self.task_id
             )
