@@ -90,6 +90,19 @@ class MapTarget(Target):
         else:
             self.map = pandas.read_csv(os.path.join(self.base_path, self.map_name))
 
+        # check whether this entry already exists, and remove it if it does
+        _map = self.map.copy()
+        try:
+            _map = _map[_map[self.hash_name] == self.hash]
+        except TypeError:
+            raise luigi.parameter.ParameterException(
+                "TypeError when retrieving map entry. Are you sure that you're "
+                "passing in the right hash?"
+            )
+
+        if self.exists():
+            self.remove()
+
         return self
 
     def __exit__(self, type, value, traceback):
@@ -108,7 +121,7 @@ class MapTarget(Target):
         new_entry[self.hash_name] = self.hash
 
         self.map = self.map.append(new_entry)
-        
+
         # remove the directory
         if os.path.exists(os.path.join(self.base_path, str(new_id))):
             shutil.rmtree(os.path.join(self.base_path, str(new_id)))
@@ -175,3 +188,39 @@ class MapTarget(Target):
         _id = _map[self.id_name].values[0]
 
         return os.path.exists(os.path.join(self.base_path, str(_id)))
+
+
+    def remove(self):
+        """Removes an entry from the map file, and deletes the target folder.
+        Call only from __enter__ or __exit__.
+        """
+
+        # make a copy of the map
+        _map = self.map.copy()
+
+        # identify the id
+        for key in self.params:
+            _map = _map[_map[key] == self.params[key]]
+
+        if len(_map) > 1:
+            raise luigi.parameter.ParameterException("Parameter set %s does "
+                                                     "not uniquely identify a "
+                                                     "parameter." % self.params)
+
+        if len(_map) == 0:
+            return
+
+        _id = _map[self.id_name].values[0]
+
+        # remove that folder, if it exists
+        if os.path.exists(os.path.join(self.base_path, str(_id))):
+            shutil.rmtree(os.path.join(self.base_path, str(_id)))
+
+        # remove the id from map
+        self.map = self.map[self.map[self.id_name] != _id]
+
+        # write it to the folder
+        self.map.to_csv(
+            os.path.join(self.base_path, self.map_name),
+            index=False
+        )
