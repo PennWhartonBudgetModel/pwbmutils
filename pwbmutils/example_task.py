@@ -11,12 +11,13 @@ import pandas
 
 import pwbmutils
 
+from pwbmutils.map_target import MapTarget
+
 # pylint: disable=E1101, E1136
 
 class ExampleTask(pwbmutils.PWBMTask):
     """Example task illustrates the use of PWBM task.
     """
-
 
     def requires(self):
         """Requires the interface reader.

@@ -94,7 +94,7 @@ class PWBMTask(luigi.Task):
         default="",
         description="Explicit job name given via qsub.")
 
-    run_locally = luigi.BoolParameter(
+    run_locally = luigi.IntParameter(
         default=get_config_value("run_locally"),
         significant=False,
         description="Run locally instead of on the cluster.")
@@ -104,9 +104,13 @@ class PWBMTask(luigi.Task):
         default=True,
         description="Don't tarball (and extract) the luigi project files")
 
-    cache_location = luigi.Parameter(default=get_config_value("cache_location"))
+    cache_location = luigi.Parameter(
+        default=get_config_value("cache_location"),
+        significant=False)
 
-    qsub_command = luigi.Parameter(default=get_config_value("qsub_command"))
+    qsub_command = luigi.Parameter(
+        default=get_config_value("qsub_command"),
+        significant=False)
 
     _dependencies = luigi.IntParameter(default=0)
 
@@ -152,7 +156,7 @@ class PWBMTask(luigi.Task):
 
 
     def run(self):
-        if self.run_locally:
+        if self.run_locally == 1:
             return self.work()
         else:
 
@@ -164,9 +168,9 @@ class PWBMTask(luigi.Task):
             max_filename_length = os.fstatvfs(0).f_namemax
             self.tmp_dir = self.tmp_dir[:max_filename_length]
             logger.info("Tmp dir: %s", self.tmp_dir)
-            os.makedirs(self.tmp_dir)
 
             copytree(".", os.path.join(self.tmp_dir))
+            shutil.rmtree(os.path.join(self.tmp_dir, ".git"))
             
             # Dump the code to be run into a pickle file
             logging.debug("Dumping pickled class")
@@ -244,10 +248,10 @@ class PWBMTask(luigi.Task):
                         logger.error(err.read())
 
             # wait a beat, to give things a chance to settle
-            time.sleep(5)
+            time.sleep(2)
 
             # check whether the file exists
-            if not os.path.exists(self.output().path):
+            if not self.output().exists():
                 raise Exception("qsub failed to produce output")
             else:
                 # delete the temporaries, if they're there.

@@ -14,31 +14,17 @@ import subprocess
 import luigi
 
 from .pwbm_task import PWBMTask
+from .map_target import MapTarget
 
 # pylint: disable=E1101
 
-class InterfaceWriter(PWBMTask):
-    """Task for creating stamped runs that are moved to the HPCC, available to
-    other components.
-
-    Parameters:
-        BoolParameter {stamp} -- True, to perform a stamped run.
-        TaskParameter {output_task} -- Luigi task to copy up to HPCC.
-        Parameter {name_of_component} -- The name of the component to copy to.
-        Parameter {name_of_interface} -- The name of the interface to copy to.
-
-    Raises:
-        Exception -- Thrown if uncommitted changes in repository.
-    """
+class InterfaceTask(PWBMTask):
 
     stamp = luigi.BoolParameter(
-        default=False,
+        default=subprocess.call(["git", "diff-index", "--quiet", "HEAD", "--"]) not in [1, 128] or os.path.exists("stamp"),
         description="Whether to perform a stamped run. If true, will check for "
         "uncommitted changes, and if none exist, will create a descriptive "
         "stamp and write to the HPCC server.")
-
-    output_task = luigi.TaskParameter(
-        description="Task to output to HPCC.")
 
     path_to_hpcc = luigi.Parameter(
         default=r"\\hpcc-ppi.wharton.upenn.edu\ppi" \
@@ -51,10 +37,9 @@ class InterfaceWriter(PWBMTask):
 
     name_of_interface = luigi.Parameter(
         description="The name of the interface to write to.")
-    
-    hash_tag = luigi.BoolParameter(
-        default=False,
-        description="Flag for whether to write output under hashed luigi id.")
+
+    public_parameters = luigi.DictParameter(
+        description="Public-facing parameters to be written to map file.")
 
     def output(self):
         """If performing a stamped run, will write to HPCC. Otherwise, will
@@ -106,49 +91,26 @@ class InterfaceWriter(PWBMTask):
                 with open("stamp", 'r') as file_in:
                     stamp = file_in.read()
 
-            return luigi.LocalTarget(join(
-                self.path_to_hpcc,
-                self.name_of_component,
-                "Interfaces",
-                stamp,
-                self.name_of_interface,
-                self.output_task.task_id
-            )) if self.hash_tag else luigi.LocalTarget(join(
-                self.path_to_hpcc,
-                self.name_of_component,
-                "Interfaces",
-                stamp,
-                self.name_of_interface
-            ))
+            return MapTarget(
+                join(
+                    self.path_to_hpcc,
+                    self.name_of_component,
+                    "Interfaces",
+                    stamp,
+                    self.name_of_interface
+                ),
+                self.public_parameters,
+                self.task_id
+            )
 
         else:
 
-            return luigi.LocalTarget(
+            return MapTarget(
                 join(
                     self.cache_location,
                     "Interfaces",
-                    self.task_id,
                     self.name_of_interface
-                )
+                ),
+                self.public_parameters,
+                self.task_id
             )
-
-
-    def requires(self):
-        """Requires the task to be output. Must be specified.
-        """
-
-        return self.output_task
-
-
-    def work(self):
-
-        if not exists(self.output().path):
-            os.makedirs(self.output().path)
-
-        os.rmdir(self.output().path)
-
-        # move output directory to final directory
-        shutil.move(
-            self.output_task.output().path,
-            self.output().path
-        )

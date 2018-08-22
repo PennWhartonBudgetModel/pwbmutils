@@ -2,6 +2,7 @@
 """
 
 import os
+import shutil
 from unittest import TestCase
 
 import luigi
@@ -74,8 +75,8 @@ class TestUtils(TestCase):
         )
 
         self.assertTrue(len(projections) > 0)
-    
-    
+
+
     def test_interface_direct_writer(self):
         """Test whether the interface direct writer writes out successfully.
         """
@@ -96,6 +97,57 @@ class TestUtils(TestCase):
         )
 
         self.assertTrue(len(projections) > 0)
+
+
+    def test_map_target(self):
+
+        if os.path.exists("test_interface"):
+            shutil.rmtree("test_interface")
+
+        os.makedirs("test_interface")
+    
+        map_target = pwbmutils.MapTarget(
+            "test_interface",
+            {
+                "Param1": 0,
+                "Param2": "cake"
+            },
+            0
+        )
+
+        # map target should not exist
+        self.assertFalse(map_target.exists())
+
+        # output to write
+        output = pandas.DataFrame({"test": [1, 2, 3, 4]})
+
+        # write to map target
+        with map_target as out:
+            output.to_csv(os.path.join(out.tmp_dir, "test.csv"))
+
+        # check that target exists
+        self.assertTrue(map_target.exists())
+
+        # make another map target
+        map_target = pwbmutils.MapTarget(
+            "test_interface",
+            {
+                "Param1": 2,
+                "Param2": "pie"
+            },
+            1
+        )
+
+        # map target should exist
+        self.assertFalse(map_target.exists())
+
+        # write to map target
+        with map_target as out:
+            output.to_csv(os.path.join(out.tmp_dir, "test.csv"))
+
+        # check that target exists
+        self.assertTrue(map_target.exists())
+
 
     def test_statistics(self):
         """Test whether the interface writer writes out successfully.
