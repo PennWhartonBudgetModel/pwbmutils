@@ -111,17 +111,29 @@ def add_labels(
 		interest_var, 
 		demographic, 
 		custom_title,
-		custom_axis
+		custom_axis,
+		custom_ymin,
+		custom_ymax
 	):
 	'''
 	Add title, subtitle, and y-axis labelling to the graph
 	'''
 
 	# set boundary conditions
-	y_lim_min = 0
-	# adjust height of graph relative to largest number to be graphed
-	y_lim_max = max([i.Moment.max() for i in result_list]) * 1.2
+	if custom_ymin:
+		y_lim_min = custom_ymin
+	else:
+		y_lim_min = 0
+	if custom_ymax:
+		y_lim_max = custom_ymax
+	else:
+		# adjust height of graph relative to largest number to be graphed
+		y_lim_max = max([i.Moment.max() for i in result_list]) * 1.2
+
+	# scale graph height
 	graph_height = y_lim_max - y_lim_min
+
+	
 	
 	# controls boundaries when line graphs are displayed (important for datetime functionality)
 	if categorical:
