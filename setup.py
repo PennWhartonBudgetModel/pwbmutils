@@ -14,7 +14,7 @@ setup(
     packages=["pwbmutils"],
     zip_safe=False,
     test_suite="nose.collector",
-    install_requires=["luigi", "pandas", "matplotlib"],
+    install_requires=["luigi", "pandas", "matplotlib", "portalocker"],
     test_requires=["nose"]
 )
 

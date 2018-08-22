@@ -148,47 +148,6 @@ class TestUtils(TestCase):
         # check that target exists
         self.assertTrue(map_target.exists())
 
-        # make a third and forth map target
-        map_target_1 = pwbmutils.MapTarget(
-            "test_interface",
-            {
-                "Param1": 20,
-                "Param2": "pie"
-            },
-            3
-        )
-
-        map_target_2 = pwbmutils.MapTarget(
-            "test_interface",
-            {
-                "Param1": 21,
-                "Param2": "cake"
-            },
-            4,
-            max_timeout=4
-        )
-
-        # neither should exist
-        self.assertFalse(map_target_1.exists())
-        self.assertFalse(map_target_2.exists())
-
-        # begin to write out the first map target, implementing a lock
-        with map_target_1 as locking_out:
-
-            # try to write out the second map target, should fail
-            self.assertRaises(
-                luigi.parameter.ParameterException,
-                map_target_2.__enter__
-            )
-
-        # try again
-        with map_target_2 as out:
-            output.to_csv(os.path.join(out.tmp_dir, "test.csv"))
-        
-        # first target should not exist, second target should
-        self.assertFalse(map_target_1.exists())
-        self.assertTrue(map_target_2.exists())
-
 
     def test_statistics(self):
         """Test whether the interface writer writes out successfully.
