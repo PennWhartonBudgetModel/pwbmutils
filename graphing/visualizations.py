@@ -124,7 +124,9 @@ def visualization(
 	max_line_length=80,
 	save_location=None,
 	legend_location=None,
-	legend_font_size=9
+	legend_font_size=9,
+	custom_ymin=None,
+	custom_ymax=None
 ):
 	'''
 	Visualize a function. Create bar/line graphs for one data series, without comparison to another
@@ -145,6 +147,8 @@ def visualization(
 	- save_location: When enabled, saves the created graph to a save location
 	- legend_location: The position on the graph to place the legend
 	- legend_text_size: Adjusts the size of the text in the legend
+	- custom_ymin: When enabled, sets a customized minimum y axis value
+	- custom_ymax: When enabled, sets a customized maximum y axis value
 	'''
 
 	# load the style guide
@@ -207,7 +211,9 @@ def visualization(
 		interest_var, 
 		demographic, 
 		custom_title,
-		custom_axis
+		custom_axis,
+		custom_ymin,
+		custom_ymax
 	)
 
 	# control frame size
