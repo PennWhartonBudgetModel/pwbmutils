@@ -22,7 +22,7 @@ import os
 from os.path import exists, join
 import random
 import shutil
-from shutil import copytree
+from shutil import copytree, copyfile
 import subprocess
 import sys
 import time
@@ -169,9 +169,16 @@ class PWBMTask(luigi.Task):
             self.tmp_dir = self.tmp_dir[:max_filename_length]
             logger.info("Tmp dir: %s", self.tmp_dir)
 
-            copytree(".", os.path.join(self.tmp_dir))
-            shutil.rmtree(os.path.join(self.tmp_dir, ".git"))
-            
+            to_copy = [d for d in os.listdir() if d != ".git"]
+            if not os.path.exists(self.tmp_dir):
+                os.makedirs(self.tmp_dir)
+                
+            for f in to_copy:
+                if os.path.isfile(f):
+                    copyfile(f, os.path.join(self.tmp_dir, f))
+                else:
+                    copytree(f, os.path.join(self.tmp_dir, f))
+           
             # Dump the code to be run into a pickle file
             logging.debug("Dumping pickled class")
             self._dump(self.tmp_dir)
