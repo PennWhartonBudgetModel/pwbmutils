@@ -189,7 +189,15 @@ def visualization(
 	f, ax = plt.subplots(1)
 	
 	if categorical:
-		graphing.utilities.graph_categorical(ax, categorical_coding, result_list, demographic, label_list)
+		graphing.utilities.graph_categorical(
+			ax, 
+			categorical_coding, 
+			result_list, 
+			demographic, 
+			legend_location, 
+			legend_font_size, 
+			label_list
+		)
 	else:
 		graphing.utilities.graph_non_categorical(
 			ax,

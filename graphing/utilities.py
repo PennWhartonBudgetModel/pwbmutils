@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from statsmodels.stats.weightstats import DescrStatsW as stats
 
-def graph_categorical(ax, categorical_coding, result_list, demographic, label_list):
+def graph_categorical(ax, categorical_coding, result_list, demographic, legend_location, legend_font_size, label_list):
 	'''
 	Create plot for categorical graphs
 	'''
@@ -41,14 +41,23 @@ def graph_categorical(ax, categorical_coding, result_list, demographic, label_li
 		
 	# add legend, if multiple lines are being graphed
 	if len(result_list) > 1:
-		leg = plt.legend(
-			tuple(datasets),
-			label_list,
-			bbox_to_anchor = (-0.03, 1),
-			loc = 2,
-			fontsize = 9,
-			ncol = len(result_list)
-		)
+		if legend_location:
+			leg = plt.legend(
+				tuple(datasets),
+				label_list, 
+				loc = legend_location,
+				fontsize = legend_font_size,
+				ncol = len(result_list)
+			)
+		else:
+			leg = plt.legend(
+				tuple(datasets),
+				label_list, 
+				bbox_to_anchor = (-0.03, 1),
+				loc = 2,
+				fontsize = 9,
+				ncol = len(result_list)
+			)
 
 def graph_non_categorical(ax, result_list, demographic, legend_location, legend_font_size, label_list):
 	'''
@@ -131,8 +140,6 @@ def add_labels(
 
 	# scale graph height
 	graph_height = y_lim_max - y_lim_min
-
-	
 	
 	# controls boundaries when line graphs are displayed (important for datetime functionality)
 	if categorical:
