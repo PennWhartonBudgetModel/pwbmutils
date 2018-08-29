@@ -22,12 +22,13 @@ def graphing_ready_dataframe(
 	df, 
 	demographic, 
 	interest_var,
-	moment_type='Mean',
+	moment_type='Frequency',
 	interest_value=1, 
 	weights=None, 
 	convert_to_annual=False,
 	datetime=False,
-	datetime_format='%Y'
+	datetime_format='%Y',
+	convert_to_percent=False
 ):
 	'''
 	Given a dataframe, and metrics along which to measure, prepares information for graphing
@@ -106,6 +107,10 @@ def graphing_ready_dataframe(
 	# if necessary, convert to datetime
 	if datetime:
 		results['Value'] = pd.to_datetime(results.Value, format=datetime_format)
+	
+	# if necessary, convert to percent (via multiplication)
+	if convert_to_percent:
+			results.Moment = results.Moment * 100
 		
 	return results
 
