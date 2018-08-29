@@ -170,6 +170,9 @@ class PWBMTask(luigi.Task):
             logger.info("Tmp dir: %s", self.tmp_dir)
 
             to_copy = [d for d in os.listdir() if d != ".git"]
+            if not os.path.exists(self.tmp_dir):
+                os.makedirs(self.tmp_dir)
+                
             for f in to_copy:
                 if os.path.isfile(f):
                     copyfile(f, os.path.join(self.tmp_dir, f))
