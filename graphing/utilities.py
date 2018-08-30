@@ -18,7 +18,6 @@ def graph_categorical(ax, categorical_coding, result_list, demographic, legend_l
 
 	# graph cateogrical information, using a specified order and containing error bars
 	width = 0.7 / len(result_list)
-	labels = categorical_coding
 	ind = np.arange(len(result_list[0]))
 	
 	# sequentially plot resuls from each dataframe
@@ -33,10 +32,10 @@ def graph_categorical(ax, categorical_coding, result_list, demographic, legend_l
 		
 	ax.set_xlabel("{}".format(demographic), fontsize = 12)
 	ax.set_xticks(ind + 0.2 + 0.35)
-	ax.set_xticklabels(labels, fontsize = 9)
+	ax.set_xticklabels(categorical_coding, fontsize = 9)
 	
 	# rotate labels for categories that are too long or have too many items
-	if len(labels) > 10:
+	if len(categorical_coding) > 10:
 		plt.xticks(rotation = 45)
 		
 	# add legend, if multiple lines are being graphed
@@ -127,16 +126,24 @@ def add_labels(
 	Add title, subtitle, and y-axis labelling to the graph
 	'''
 
+	# fetch largest value appearing in the data
+	global_max = max([i.Moment.max() for i in result_list])
+
 	# set boundary conditions
 	if custom_ymin:
 		y_lim_min = custom_ymin
 	else:
-		y_lim_min = 0
+		# adjust minimum slightly below x-axis
+		if categorical:
+			y_lim_min = -1 * (global_max / 100)
+		else:
+			y_lim_min = -1 * (global_max / 50)
+
 	if custom_ymax:
 		y_lim_max = custom_ymax
 	else:
 		# adjust height of graph relative to largest number to be graphed
-		y_lim_max = max([i.Moment.max() for i in result_list]) * 1.2
+		y_lim_max = global_max * 1.2
 
 	# scale graph height
 	graph_height = y_lim_max - y_lim_min
