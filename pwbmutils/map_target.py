@@ -77,63 +77,47 @@ class MapTarget(Target):
 
     def __exit__(self, type, value, traceback):
 
-        # attempt to load the map file, create a new one if it doesn't already exist
-        path_to_map_file = os.path.join(self.base_path, self.map_name)
-        if not os.path.exists(path_to_map_file):
-            map_handle = open(path_to_map_file, "w+")
-            portalocker.lock(map_handle, portalocker.LOCK_EX)
-            self.map = pandas.DataFrame(columns=self.params)
-        else:
-            for i in range(self.max_timeout):
-                try:
-                    self.map = pandas.read_csv(path_to_map_file)
-                    map_handle = open(path_to_map_file, "w+")
-                    portalocker.lock(map_handle, portalocker.LOCK_EX)
-                except PermissionError:
-                    logger.debug("Failed to read map file, retrying...")
-                except portalocker.LockException:
-                    logger.debug("Failed to read map file, retrying...")
-                break
+        try:
 
-            if i == self.max_timeout - 1:
-                raise PermissionError("Max timeout exceeded for map file")
+            with portalocker.Lock(os.path.join(self.base_path, self.map_name), 'a') as map_handle:
 
-        # construct a new id, 0 if no existing entries
-        if len(self.map) == 0:
-            new_id = 0
-        else:
-            new_id = max(self.map[self.id_name].values) + 1
+                # construct a new id, 0 if no existing entries
+                new_id = abs(hash(self.hash))
 
-        # create a new table to append, with the new id, and the parameters
-        new_entry = pandas.DataFrame({
-            k: [self.params[k]] for k in self.params
-        })
-        new_entry[self.id_name] = new_id
-        new_entry[self.hash_name] = self.hash
+                # create a new table to append, with the new id, and the parameters
+                new_entry = pandas.DataFrame({
+                    k: [self.params[k]] for k in self.params
+                })
+                new_entry[self.id_name] = new_id
+                new_entry[self.hash_name] = self.hash
 
-        if len(self.map) > 0:
-            self.map = self.map.append(new_entry)
-        else:
-            self.map = new_entry
+                # remove the directory
+                if os.path.exists(os.path.join(self.base_path, str(new_id))):
+                    shutil.rmtree(os.path.join(self.base_path, str(new_id)))
 
-        # remove the directory
-        if os.path.exists(os.path.join(self.base_path, str(new_id))):
-            shutil.rmtree(os.path.join(self.base_path, str(new_id)))
+                # move the temporary directory
+                os.rename(
+                    self.tmp_dir,
+                    os.path.join(self.base_path, str(new_id))
+                )
 
-        # move the temporary directory
-        os.rename(
-            self.tmp_dir,
-            os.path.join(self.base_path, str(new_id))
-        )
-
-        # write the new map file out
-        self.map.to_csv(
-            map_handle,
-            index=False
-        )
-
-        # lift the lock
-        map_handle.close()
+                # write the new map file out to a temporary location
+                if os.stat(os.path.join(self.base_path, self.map_name)).st_size == 0:
+                    new_entry.to_csv(
+                        map_handle,
+                        index=False
+                    )
+                else:
+                    new_entry.to_csv(
+                        map_handle,
+                        index=False,
+                        header=False
+                    )
+        except:
+            pass
+        finally:
+            if os.path.exists(self.tmp_dir):
+                shutil.rmtree(self.tmp_dir)
 
 
     def exists(self):
@@ -144,21 +128,8 @@ class MapTarget(Target):
         if not os.path.exists(os.path.join(self.base_path, self.map_name)):
             return False
 
-        # attempt to read the map file
-        map_handle = open(os.path.join(self.base_path, self.map_name), "r+")
-
         # read the map file
-        for i in range(self.max_timeout):
-            try:
-                self.map = pandas.read_csv(map_handle)
-            except PermissionError:
-                time.sleep(1)
-            break
-
-        if i == self.max_timeout-1:
-            raise PermissionError("Max timeout exceeded for reading map file")
-
-        map_handle.close()
+        self.map = pandas.read_csv(os.path.join(self.base_path, self.map_name))
 
         # check that an id name column exists in the map file
         if not self.id_name in self.map:
