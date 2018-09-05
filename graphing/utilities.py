@@ -3,12 +3,14 @@ Contains helper functions used during visualization
 '''
 
 import warnings
+import datetime
 import os
 import sys
 import re
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 from statsmodels.stats.weightstats import DescrStatsW as stats
 
 def graph_categorical(ax, categorical_coding, result_list, demographic, legend_location, legend_font_size, label_list):
@@ -58,11 +60,19 @@ def graph_categorical(ax, categorical_coding, result_list, demographic, legend_l
 				ncol = len(result_list)
 			)
 
-def graph_non_categorical(ax, result_list, demographic, legend_location, legend_font_size, label_list):
+def graph_non_categorical(f, ax, result_list, demographic, legend_location, legend_font_size, label_list):
 	'''
 	Create plot for non-categorical graphs
 	'''
 
+	# fetch largest value appearing in the data
+	
+
+	# define x-tick frequency
+	#ax.set_xticks(result_list[0].Value)
+	#plt.xticks(np.arange(global_min, global_max, 1))
+
+	# plot each dataframe
 	for dataframe in result_list:
 		plot = plt.plot(dataframe.Value, dataframe.Moment, label = '{}'.format(demographic))
 
@@ -107,6 +117,23 @@ def graph_non_categorical(ax, result_list, demographic, legend_location, legend_
 			)
 
 	ax.set_xlabel("{}".format(demographic), fontsize = 12)
+
+		# if datetime:
+		# 	# find min/max years
+		# min_year = result_list[0].Value.dt.year.min()
+		# max_year = result_list[0].Value.dt.year.max()
+		# year_range = max_year - min_year
+
+
+		# ax.xaxis.set_major_locator(mdates.YearLocator())
+		# f.autofmt_xdate()
+		# for tick in ax.xaxis.get_major_ticks():
+		# 	tick.label.set_fontsize(8)
+
+	# adjust size/rotation of xtick labels
+	for tick in ax.xaxis.get_major_ticks():
+		tick.label.set_fontsize(10)
+	plt.xticks(rotation=45)
 
 def add_labels(
 		ax,

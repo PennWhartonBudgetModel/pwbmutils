@@ -131,7 +131,8 @@ def visualization(
 	legend_location=None,
 	legend_font_size=9,
 	custom_ymin=None,
-	custom_ymax=None
+	custom_ymax=None,
+	datetime=False
 ):
 	'''
 	Visualize a function. Create bar/line graphs for one data series, without comparison to another
@@ -205,6 +206,7 @@ def visualization(
 		)
 	else:
 		graphing.utilities.graph_non_categorical(
+			f,
 			ax,
 			result_list, 
 			demographic, 
