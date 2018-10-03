@@ -132,7 +132,8 @@ def visualization(
 	legend_font_size=9,
 	custom_ymin=None,
 	custom_ymax=None,
-	datetime=False
+	datetime=False,
+	standard_errors=True
 ):
 	'''
 	Visualize a function. Create bar/line graphs for one data series, without comparison to another
@@ -155,6 +156,7 @@ def visualization(
 	- legend_text_size: Adjusts the size of the text in the legend
 	- custom_ymin: When enabled, sets a customized minimum y axis value
 	- custom_ymax: When enabled, sets a customized maximum y axis value
+	- standard_errors: Controls whether standard error bars are displayed
 	'''
 
 	# load the style guide
@@ -202,7 +204,8 @@ def visualization(
 			demographic, 
 			legend_location, 
 			legend_font_size, 
-			label_list
+			label_list,
+			standard_errors
 		)
 	else:
 		graphing.utilities.graph_non_categorical(
@@ -212,7 +215,8 @@ def visualization(
 			demographic, 
 			legend_location, 
 			legend_font_size, 
-			label_list
+			label_list,
+			standard_errors
 		)
 	
 	# add title/subtitle

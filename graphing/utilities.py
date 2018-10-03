@@ -13,7 +13,16 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from statsmodels.stats.weightstats import DescrStatsW as stats
 
-def graph_categorical(ax, categorical_coding, result_list, demographic, legend_location, legend_font_size, label_list):
+def graph_categorical(
+		ax, 
+		categorical_coding, 
+		result_list, 
+		demographic, 
+		legend_location, 
+		legend_font_size, 
+		label_list,
+		standard_errors
+	):
 	'''
 	Create plot for categorical graphs
 	'''
@@ -26,8 +35,11 @@ def graph_categorical(ax, categorical_coding, result_list, demographic, legend_l
 	datasets = []
 	for i in range(len(result_list)):
 		moments = result_list[i].Moment.values.tolist()
-		std_errors = result_list[i].StandardError.values.tolist()
-		plot = ax.bar(ind + 0.2 + (width * i), moments, width, yerr = std_errors)
+		if standard_errors:
+			std_errors = result_list[i].StandardError.values.tolist()
+			plot = ax.bar(ind + 0.2 + (width * i), moments, width, yerr = std_errors)
+		else:
+			plot = ax.bar(ind + 0.2 + (width * i), moments, width)
 		
 		# create a holding list of all graphed data, to be used for legend creation
 		datasets.append(plot[0])
@@ -60,7 +72,16 @@ def graph_categorical(ax, categorical_coding, result_list, demographic, legend_l
 				ncol = len(result_list)
 			)
 
-def graph_non_categorical(f, ax, result_list, demographic, legend_location, legend_font_size, label_list):
+def graph_non_categorical(
+		f, 
+		ax, 
+		result_list, 
+		demographic, 
+		legend_location, 
+		legend_font_size, 
+		label_list, 
+		standard_errors
+	):
 	'''
 	Create plot for non-categorical graphs
 	'''
@@ -79,25 +100,26 @@ def graph_non_categorical(f, ax, result_list, demographic, legend_location, lege
 	# retrieve color cycler to match standard error bars to the original line's color scheme
 	color_cylcer = plt.rcParams['axes.prop_cycle'].by_key()['color']
 	
-	for i in range(len(result_list)):  
-		# adds confidence interval bars to line graphs
-		plt.plot(
-			result_list[i].Value,
-			result_list[i].Moment + (result_list[i].StandardError * 1.96),
-			label = '{}'.format(demographic),
-			linestyle = ':',
-			color = color_cylcer[i],
-			linewidth = 2.4
-		)
-		plt.plot(
-			result_list[i].Value,
-			result_list[i].Moment - (result_list[i].StandardError * 1.96),
-			label = '{}'.format(demographic),
-			linestyle = ':',
-			color = color_cylcer[i],
-			linewidth = 2.4
-		)
-	
+	if standard_errors:
+		for i in range(len(result_list)):  
+			# adds confidence interval bars to line graphs
+			plt.plot(
+				result_list[i].Value,
+				result_list[i].Moment + (result_list[i].StandardError * 1.96),
+				label = '{}'.format(demographic),
+				linestyle = ':',
+				color = color_cylcer[i],
+				linewidth = 2.4
+			)
+			plt.plot(
+				result_list[i].Value,
+				result_list[i].Moment - (result_list[i].StandardError * 1.96),
+				label = '{}'.format(demographic),
+				linestyle = ':',
+				color = color_cylcer[i],
+				linewidth = 2.4
+			)
+		
 	# add legend
 	if len(result_list) > 1:
 		if legend_location:
