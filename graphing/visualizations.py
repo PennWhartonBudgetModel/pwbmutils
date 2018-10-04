@@ -133,7 +133,8 @@ def visualization(
 	custom_ymin=None,
 	custom_ymax=None,
 	datetime=False,
-	standard_errors=True
+	standard_errors=True,
+	figure_size=[13.5, 7.5]
 ):
 	'''
 	Visualize a function. Create bar/line graphs for one data series, without comparison to another
@@ -157,6 +158,7 @@ def visualization(
 	- custom_ymin: When enabled, sets a customized minimum y axis value
 	- custom_ymax: When enabled, sets a customized maximum y axis value
 	- standard_errors: Controls whether standard error bars are displayed
+	- figure_size: Controls size of the displayed figure
 	'''
 
 	# load the style guide
@@ -236,7 +238,7 @@ def visualization(
 	)
 
 	# control frame size
-	plt.rcParams['figure.figsize'] = [13.5, 7.5]
+	plt.rcParams['figure.figsize'] = figure_size
 	
 	# save figure, if necessay
 	if save_location:
