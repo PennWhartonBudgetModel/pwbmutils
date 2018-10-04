@@ -7,7 +7,7 @@ import matplotlib
 
 setup(
     name="pwbmutils",
-    version="0.8",
+    version="0.81",
     description="Collection of cross-component utility functions",
     url="https://github.com/PennWhartonBudgetModel/Utilities",
     author="Penn Wharton Budget Model",
@@ -22,7 +22,7 @@ style_guide = """
 lines.linewidth: 4
 lines.solid_capstyle: butt
 
-axes.prop_cycle: cycler('color', ['004785', 'd7bc6a', 'a90533', 'b2b6a7', 'd7bc6a'])
+axes.prop_cycle: cycler('color', ['004785', 'd7bc6a', 'a90533', 'b2b6a7', '532a85', 'c5093b', 'eeedea', '282f85', '026cb5', 'a8204e'])
 axes.facecolor: FFFFFF
 axes.labelsize: large
 axes.axisbelow: true
