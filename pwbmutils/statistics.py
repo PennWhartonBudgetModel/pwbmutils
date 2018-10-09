@@ -365,7 +365,7 @@ class LinearRegression(object):
 
     def draw(self, data, rand_engine):
 
-        return self.predict(data) + rand_engine.normal(0, self._std)
+        return self.predict(data) + rand_engine.normal(0, self._std, len(data))
 
     def to_pickle(self, filename):
 
