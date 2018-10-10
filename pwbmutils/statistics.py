@@ -257,7 +257,7 @@ class MultinomialRegression(object):
             self._y_design_info = y.design_info
             self._X_design_info = X.design_info
             self._model = mnlogit(formula, data, **kwargs)
-            self._fit = self._model.fit()
+            self._fit = self._model.fit(maxiter=10000)
             self._betas = self._fit.params
         else:
             self._y_design_info = None
