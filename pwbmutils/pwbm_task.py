@@ -220,17 +220,11 @@ class PWBMTask(luigi.Task):
             if self.no_tarball:
                 job_str += ' "--no-tarball"'
 
-            # Build qsub submit command
-            self.outfile = os.path.join(self.tmp_dir, 'job.out')
-            self.errfile = os.path.join(self.tmp_dir, 'job.err')
-
-            qsub_template = """echo {cmd} | {qsub_command} -o ":{outfile}" -e ":{errfile}" -V -r y -pe {pe} {n_cpu} -N {job_name} -l m_mem_free={mem_free} -sync y"""
+            qsub_template = """echo {cmd} | {qsub_command} -V -r y -pe {pe} {n_cpu} -N {job_name} -l m_mem_free={mem_free} -sync y"""
 
             submit_cmd = qsub_template.format(
                 cmd=job_str,
                 job_name=self.job_name,
-                outfile=self.outfile,
-                errfile=self.errfile,
                 pe=self.parallel_env,
                 n_cpu=self.n_cpu,
                 mem_free=self.mem_free,
