@@ -82,7 +82,7 @@ class MapTarget(Target):
             with portalocker.Lock(os.path.join(self.base_path, self.map_name), 'a') as map_handle:
 
                 # construct a new id, 0 if no existing entries
-                new_id = abs(hash(self.hash))
+                new_id = self.hash
 
                 # create a new table to append, with the new id, and the parameters
                 new_entry = pandas.DataFrame({
