@@ -284,14 +284,20 @@ class MultinomialRegression(object):
 
         linear_transforms = numpy.exp(linear_transforms)
 
+        columns = self._y_design_info.column_names
+        is_true = ["True]" in i for i in columns]
+        columns = [c for c in columns if "True]" in c]
+
+
         return pandas.DataFrame(
-            linear_transforms / numpy.sum(
+            linear_transforms[:,is_true] / numpy.sum(
                 linear_transforms, axis=1, keepdims=True),
-            columns=self._y_design_info.column_names)
+            columns=columns)
 
     def draw(self, data, rand_engine):
 
         prediction = self.predict(data).values.cumsum(axis=1)
+        prediction = numpy.append(prediction, numpy.ones((prediction.shape[0], 1)), axis=1)
         random = rand_engine.uniform(size=(len(data), 1))
         return numpy.argmax(prediction > random, axis=1)
 
