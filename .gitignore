@@ -3,3 +3,6 @@
 test_interface/
 .vscode/
 graphing/sample_cps.pkl
+build/
+dist/
+pwbmutils.egg-info/
