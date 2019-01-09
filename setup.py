@@ -7,7 +7,7 @@ import matplotlib
 
 setup(
     name="pwbmutils",
-    version="0.92",
+    version="0.93",
     description="Collection of cross-component utility functions",
     url="https://github.com/PennWhartonBudgetModel/Utilities",
     author="Penn Wharton Budget Model",
