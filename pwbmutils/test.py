@@ -112,7 +112,7 @@ class TestUtils(TestCase):
                 "Param1": 0,
                 "Param2": "cake"
             },
-            0
+            "a0"
         )
 
         # map target should not exist
@@ -135,7 +135,7 @@ class TestUtils(TestCase):
                 "Param1": 2,
                 "Param2": "pie"
             },
-            1
+            "a1"
         )
 
         # map target should exist
