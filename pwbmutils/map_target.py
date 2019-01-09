@@ -27,8 +27,6 @@ class MapTarget(Target):
             params,
             hash_value,
             map_name="map.csv",
-            id_name="id",
-            hash_name="hash",
             max_timeout=2400
         ):
         """Initializes a new map target.
@@ -48,11 +46,9 @@ class MapTarget(Target):
         self.base_path = base_path
         self.params = params
         self.map_name = map_name
-        self.id_name = id_name
         self.tmp_dir = None
         self.map = None
-        self.hash = hash_value
-        self.hash_name = hash_name
+        self.hash = str(hash_value)
         self.max_timeout = max_timeout
 
 
@@ -81,17 +77,17 @@ class MapTarget(Target):
 
             with portalocker.Lock(os.path.join(self.base_path, self.map_name), 'a') as map_handle:
 
-                # construct a new id, 0 if no existing entries
+                # construct a new id
                 new_id = self.hash
 
                 # create a new table to append, with the new id, and the parameters
                 new_entry = pandas.DataFrame({
                     k: [self.params[k]] for k in self.params
                 })
-                new_entry[self.id_name] = new_id
-                new_entry[self.hash_name] = self.hash
+                new_entry[""] = new_id
+                new_entry = new_entry.set_index("")
 
-                # remove the directory
+                # remove the directory, if it exists
                 if os.path.exists(os.path.join(self.base_path, str(new_id))):
                     shutil.rmtree(os.path.join(self.base_path, str(new_id)))
 
@@ -101,16 +97,14 @@ class MapTarget(Target):
                     os.path.join(self.base_path, str(new_id))
                 )
 
-                # write the new map file out to a temporary location
+                # write the new map file out
                 if os.stat(os.path.join(self.base_path, self.map_name)).st_size == 0:
                     new_entry.to_csv(
-                        map_handle,
-                        index=False
+                        map_handle
                     )
                 else:
                     new_entry.to_csv(
                         map_handle,
-                        index=False,
                         header=False
                     )
         except:
@@ -129,36 +123,23 @@ class MapTarget(Target):
             return False
 
         # read the map file
-        self.map = pandas.read_csv(os.path.join(self.base_path, self.map_name))
+        self.map = pandas.read_csv(os.path.join(self.base_path, self.map_name), index_col=0)
 
-        # check that an id name column exists in the map file
-        if not self.id_name in self.map:
-            raise luigi.parameter.ParameterException(
-                "Id column named %s was not found in map file %s" % (self.id_name, self.map_name)
-            )
-
-        # select the right row from the map file
-        _map = self.map.copy()
-        try:
-            _map = _map[_map[self.hash_name] == self.hash]
-        except TypeError:
-            raise luigi.parameter.ParameterException(
-                "TypeError when retrieving map entry. Are you sure that you're "
-                "passing in the right hash?"
-            )
-
-        # check that it uniquely identifies an id
-        if len(_map) > 1:
-            raise luigi.parameter.ParameterException(
-                "Parameter set %s does not uniquely identify a parameter." % self.params
-            )
-
-        # if no entry exists, then target does not exist
-        if len(_map) == 0:
+        # if it's in the map file and the index, then it exists
+        if self.hash in self.map.index and os.path.exists(os.path.join(self.base_path, self.hash)):
+            return True
+        
+        # if it's in neither, then it does not exist
+        if self.hash not in self.map.index and not os.path.exists(os.path.join(self.base_path, self.hash)):
             return False
+        
+        # otherwise, something went wrong
+        if self.hash in self.map.index and not os.path.exists(os.path.join(self.base_path, self.hash)):
+            raise luigi.parameter.ParameterException(
+                "Index %s in map file but not in folder" % self.hash
+            )
 
-        # if an entry exists in the map file, check that the associated file
-        # also exists
-        _id = _map[self.id_name].values[0]
-
-        return os.path.exists(os.path.join(self.base_path, str(_id)))
+        if self.hash not in self.map.index and os.path.exists(os.path.join(self.base_path, self.hash)):
+            raise luigi.parameter.ParameterException(
+                "Index %s in folder but not in map file" % self.hash
+            )
