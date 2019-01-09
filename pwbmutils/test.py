@@ -77,28 +77,6 @@ class TestUtils(TestCase):
         self.assertTrue(len(projections) > 0)
 
 
-    def test_interface_direct_writer(self):
-        """Test whether the interface direct writer writes out successfully.
-        """
-
-        example_task = pwbmutils.ExampleTask.build_task()
-        test_task = pwbmutils.InterfaceDirectWriter.build_task(
-            output_folder=example_task.output().path,
-            name_of_component="TestUtilities",
-            name_of_interface="testinterface")
-
-        luigi.build([test_task], local_scheduler=True)
-
-        projections = pandas.read_csv(
-            os.path.join(
-                test_task.output().path,
-                "projections.csv"
-            )
-        )
-
-        self.assertTrue(len(projections) > 0)
-
-
     def test_map_target(self):
 
         if os.path.exists("test_interface"):
