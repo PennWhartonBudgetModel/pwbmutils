@@ -85,6 +85,7 @@ class MapTarget(Target):
                     k: [self.params[k]] for k in self.params
                 })
                 new_entry[""] = new_id
+                new_entry[""] = new_entry[""].astype(str)
                 new_entry = new_entry.set_index("")
 
                 # remove the directory, if it exists
