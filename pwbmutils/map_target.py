@@ -1,6 +1,7 @@
 """Target which also maps itself for external consumption using a map file.
 """
 
+import csv
 import datetime
 import logging
 import os
@@ -101,12 +102,16 @@ class MapTarget(Target):
                 # write the new map file out
                 if os.stat(os.path.join(self.base_path, self.map_name)).st_size == 0:
                     new_entry.to_csv(
-                        map_handle
+                        map_handle,
+                        quotechar="\"",
+                        quoting=csv.QUOTE_NONNUMERIC
                     )
                 else:
                     new_entry.to_csv(
                         map_handle,
-                        header=False
+                        header=False,
+                        quotechar="\"",
+                        quoting=csv.QUOTE_NONNUMERIC
                     )
         except:
             pass
