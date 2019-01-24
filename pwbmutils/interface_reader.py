@@ -45,6 +45,10 @@ class InterfaceReader(PWBMTask):
             if sys.platform == "win32" \
             else "/home/mnt/projects/ppi",
         description="Path to the HPCC.")
+    
+    cache_locally = luigi.BoolParameter(
+         default=sys.platform == "win32",
+         description="Default caches locally on windows machines, but not on HPCC.")
 
     def output(self):
 
@@ -60,7 +64,7 @@ class InterfaceReader(PWBMTask):
             interface
         )
 
-        if self.cache_location is not None:
+        if self.cache_location is not None and self.cache_locally:
             destination_folder = join(
                 self.cache_location,
                 component,
