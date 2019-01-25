@@ -277,7 +277,7 @@ class MultinomialRegression(object):
 
         (X, ) = patsy.build_design_matrices([self._X_design_info], data)
 
-        linear_transforms = numpy.asarray(X) @ self._betas
+        linear_transforms = numpy.asarray(X) @ numpy.asarray(self._betas)
 
         linear_transforms = numpy.concatenate(
             [numpy.zeros((len(data), 1)), linear_transforms], axis=1)
