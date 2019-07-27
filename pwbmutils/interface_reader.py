@@ -56,13 +56,22 @@ class InterfaceReader(PWBMTask):
         component = self.interface_info["component"]
         interface = self.interface_info["interface"]
 
-        server_location = join(
-            self.path_to_hpcc,
-            component,
-            "Interfaces",
-            version,
-            interface
-        )
+		if component in ['DatasetProcessor']:
+			server_location = join(
+				self.path_to_hpcc,
+				component,
+				interface,
+				"Interfaces",
+				version
+			)
+		else:	
+			server_location = join(
+				self.path_to_hpcc,
+				component,
+				"Interfaces",
+				version,
+				interface
+			)
 
         if self.cache_location is not None and self.cache_locally:
             destination_folder = join(
