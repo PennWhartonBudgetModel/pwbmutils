@@ -6,7 +6,7 @@ import os
 
 setup(
     name="pwbmutils",
-    version="0.97",
+    version="0.98",
     description="Collection of cross-component utility functions",
     url="https://github.com/PennWhartonBudgetModel/Utilities",
     author="Penn Wharton Budget Model",
