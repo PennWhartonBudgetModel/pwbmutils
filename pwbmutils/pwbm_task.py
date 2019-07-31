@@ -47,7 +47,8 @@ def get_config_value(key):
     }
 
     if exists("config.json"):
-        return json.load(open("config.json", "r"))[key]
+        with open("config.json", "r") as config_file:
+            return json.load(config_file)[key]
     else:
         return default[key]
 

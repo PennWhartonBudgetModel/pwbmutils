@@ -193,8 +193,8 @@ class LogitRegression(object):
 
     def to_pickle(self, filename):
 
-        pickle.dump((self._y_design_info, self._X_design_info, self._betas,
-                     self._link), open(filename, "wb"))
+        with open(filename, "wb") as f:
+            pickle.dump((self._y_design_info, self._X_design_info, self._betas, self._link), f)
 
     @staticmethod
     def read_pickle(filename):
