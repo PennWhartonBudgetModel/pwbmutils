@@ -56,7 +56,7 @@ class InterfaceReader(PWBMTask):
 		component = self.interface_info["component"]
 		interface = self.interface_info["interface"]
 
-		if component in ['DatasetProcessor']:
+		if component in ['DatasetProcessor', 'DataDownloader']:
 			server_location = join(
 				self.path_to_hpcc,
 				component,
@@ -106,7 +106,7 @@ class InterfaceReader(PWBMTask):
 		component = self.interface_info["component"]
 		interface = self.interface_info["interface"]
 
-		if component in ['DatasetProcessor']:
+		if component in ['DatasetProcessor', 'DataDownloader']:
 			server_location = join(
 				self.path_to_hpcc,
 				component,
