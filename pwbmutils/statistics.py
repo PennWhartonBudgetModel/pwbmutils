@@ -369,6 +369,13 @@ class LinearRegression(object):
 
         return linear_transform(numpy.asarray(X), self._betas)
 
+	def residuals(self, data):
+
+        if len(data) == 0:
+            return []
+
+		return data[self._model.data.ynames].values - self.predict(data)
+
     def draw(self, data, rand_engine):
 
         return self.predict(data) + rand_engine.normal(0, self._std, len(data))
