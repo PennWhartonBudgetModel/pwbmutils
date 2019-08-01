@@ -47,8 +47,8 @@ class InterfaceReader(PWBMTask):
 		description="Path to the HPCC.")
 	
 	cache_locally = luigi.BoolParameter(
-		 default=sys.platform == "win32",
-		 description="Default caches locally on windows machines, but not on HPCC.")
+		default=sys.platform == "win32",
+		description="Default caches locally on windows machines, but not on HPCC.")
 
 	def output(self):
 
