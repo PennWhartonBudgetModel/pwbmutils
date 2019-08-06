@@ -353,6 +353,8 @@ class LinearRegression(object):
 			self._fit = self._model.fit()
 			self._betas = self._fit.params
 			self._std = numpy.std(data[self._model.data.ynames].values - self.predict(data))
+			self._r2 = self._fit.rsquared
+			self._r2_adj = self._fit.rsquared_adj			
 		else:
 			self._y_design_info = None
 			self._X_design_info = None
@@ -394,20 +396,52 @@ class LinearRegression(object):
 
 		return self.predict(data) + rand_engine.normal(0, self._std, len(data))
 
-	def to_pickle(self, filename):
+	def Rsquared(self, adjusted=True):
+		'''
+		Returns the model's adjusted R squared.
+		To return unadjusted R squared, pass adjusted=False.
+		'''
+	
+		if adjusted:
+			return self._r2_adj
+		else:
+			return self._r2
 
-		pickle.dump((self._y_design_info, self._X_design_info, self._betas, self._std),
-					open(filename, "wb"))
+	def to_pickle(self, filename):
+		'''
+		Writes basic model information to a pickle file.
+		'''
+		
+		pickle.dump((
+			self._y_design_info, 
+			self._X_design_info, 
+			self._betas, 
+			self._std,
+			self._r2,
+			self._r2_adj
+		),
+		open(filename, "wb"))
 
 	@staticmethod
 	def read_pickle(filename):
-		y_design_info, X_design_info, betas, std = pickle.load(open(filename, "rb"))
+		'''
+		Reads basic model information from a pickle file.
+
+		Returns a LinearRegression object that does not include the model 
+		summary or fit object but can execute all class functions.
+		'''
+
+		y_design_info, X_design_info, betas, std, r2, r2_adj = pickle.load(
+			open(filename, "rb")
+		)
 
 		linear_regression = LinearRegression()
 		linear_regression._y_design_info = y_design_info
 		linear_regression._X_design_info = X_design_info
 		linear_regression._betas = betas
 		linear_regression._std = std
+		linear_regression._r2 = r2
+		linear_regression._r2_adj = r2_adj
 
 		return linear_regression
 
