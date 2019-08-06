@@ -334,8 +334,12 @@ class MultinomialRegression(object):
 
 
 class LinearRegression(object):
-	"""Patsy wrapper for linear estimation and prediction.
-	"""
+	'''
+	Patsy wrapper for linear estimation and prediction.
+
+	Uses statsmodels WLS to allow weights.
+	If no weights are provided, results are equivalent to OLS.
+	'''
 
 	def __init__(self, formula=None, data=None, **kwargs):
 
@@ -361,6 +365,9 @@ class LinearRegression(object):
 		return str(self._fit.summary())
 
 	def predict(self, data):
+		'''
+		Returns fitted values for the data provided.
+		'''
 
 		if len(data) == 0:
 			return []
@@ -370,6 +377,9 @@ class LinearRegression(object):
 		return linear_transform(numpy.asarray(X), self._betas)
 
 	def residuals(self, data):
+		'''
+		Returns residuals from fitting the model to the data provided.
+		'''
 
 		if len(data) == 0:
 			return []
@@ -377,6 +387,10 @@ class LinearRegression(object):
 		return data[self._model.data.ynames].values - self.predict(data)
 
 	def draw(self, data, rand_engine):
+		'''
+		Returns fitted values for the data provided plus a random draw
+		from a normal distribution with the regression standard error.
+		'''
 
 		return self.predict(data) + rand_engine.normal(0, self._std, len(data))
 
