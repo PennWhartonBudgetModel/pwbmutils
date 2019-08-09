@@ -16,9 +16,9 @@ from statsmodels.regression.linear_model import WLS
 numpy.warnings.filterwarnings("ignore")
 from statsmodels.api import GLM
 numpy.warnings.resetwarnings()
-from statsmodels.genmod.families import Binomial
-from statsmodels.formula.api import mnlogit
+from statsmodels.genmod.families.family import Binomial
 from statsmodels.genmod.families.links import logit
+from statsmodels.formula.api import mnlogit
 
 
 @njit
@@ -148,23 +148,23 @@ class LogitRegression(object):
 	)
 	"""
 
-	def __init__(self, formula=None, data=None, link=logit, **kwargs):
+	def __init__(self, formula=None, data=None, **kwargs):
 
 		if formula:
 			y, X = patsy.dmatrices(formula, data, 1)
 			self._y_design_info = y.design_info
 			self._X_design_info = X.design_info
-			self._model = GLM(y, X, family=Binomial(link), **kwargs)
+			self._model = GLM(y, X, family=Binomial(), **kwargs)
 			self._fit = self._model.fit()
 			self._betas = self._fit.params
-			self._link = link
+			self._link = logit
 		else:
 			self._y_design_info = None
 			self._X_design_info = None
 			self._model = None
 			self._fit = None
 			self._betas = None
-			self._link = link
+			self._link = logit
 
 	def __repr__(self):
 		return str(self._fit.summary()) if self._fit                           \
