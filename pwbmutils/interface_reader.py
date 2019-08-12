@@ -47,8 +47,8 @@ class InterfaceReader(PWBMTask):
 		description="Path to the HPCC.")
 	
 	cache_locally = luigi.BoolParameter(
-		 default=sys.platform == "win32",
-		 description="Default caches locally on windows machines, but not on HPCC.")
+		default=sys.platform == "win32",
+		description="Default caches locally on windows machines, but not on HPCC.")
 
 	def output(self):
 
@@ -56,7 +56,7 @@ class InterfaceReader(PWBMTask):
 		component = self.interface_info["component"]
 		interface = self.interface_info["interface"]
 
-		if component in ['DatasetProcessor']:
+		if component in ['DatasetProcessor', 'DataDownloader']:
 			server_location = join(
 				self.path_to_hpcc,
 				component,
@@ -106,7 +106,7 @@ class InterfaceReader(PWBMTask):
 		component = self.interface_info["component"]
 		interface = self.interface_info["interface"]
 
-		if component in ['DatasetProcessor']:
+		if component in ['DatasetProcessor', 'DataDownloader']:
 			server_location = join(
 				self.path_to_hpcc,
 				component,

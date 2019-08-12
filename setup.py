@@ -4,9 +4,12 @@
 from setuptools import setup
 import os
 
+# defines __version__
+exec(open("pwbmutils/version.py").read())
+
 setup(
     name="pwbmutils",
-    version="0.981",
+    version=__version__,
     description="Collection of cross-component utility functions",
     url="https://github.com/PennWhartonBudgetModel/Utilities",
     author="Penn Wharton Budget Model",
