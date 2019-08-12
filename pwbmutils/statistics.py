@@ -362,6 +362,8 @@ class LinearRegression(object):
 			self._fit = None
 			self._betas = None
 			self._std = None
+			self._r2 = None
+			self._r2_adj = None			
 
 	def __repr__(self):
 		return str(self._fit.summary())
