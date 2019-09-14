@@ -19,6 +19,7 @@ numpy.warnings.resetwarnings()
 from statsmodels.genmod.families.family import Binomial
 from statsmodels.genmod.families.links import logit
 from statsmodels.formula.api import mnlogit
+from patsy import ContrastMatrix
 
 
 @njit
@@ -121,6 +122,38 @@ def weighted_std(values, weights):
 	# Fast and numerically precise:
 	variance = numpy.average((values - average)**2, weights=weights)
 	return math.sqrt(variance)
+
+
+class FullRank(object):
+	'''
+	Full-rank categorical variable encoder for use in patsy formulas.
+
+	By default, patsy drops one category to avoid linear dependence, creating 
+	k-1 dummy variables when there are k categories. Including FullRank when 
+	specifying categorical variables will create k dummy variables.
+
+	Example usage:
+
+		y ~ C(x, FullRank)
+
+	Code and comments from Nathaniel J. Smith, 
+	https://stackoverflow.com/questions/46832637/one-hot-encoding-in-patsy/
+	'''
+	def __init__(self, reference=0):
+		self.reference = reference
+	
+	# Called to generate a full-rank encoding
+	def code_with_intercept(self, levels):
+		return ContrastMatrix(
+			numpy.eye(len(levels)),
+			['[My.%s]' % (level,) for level in levels]
+		)
+
+	# Called to generate a non-full-rank encoding. But we don't care,
+	# we do what we want, and return a full-rank encoding anyway.
+    # Take that, patsy.
+	def code_without_intercept(self, levels):
+		return self.code_with_intercept(levels)
 
 
 class LogitRegression(object):
