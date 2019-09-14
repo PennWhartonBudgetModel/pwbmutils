@@ -8,3 +8,4 @@ from .interface_task import InterfaceTask
 from .map_target import MapTarget
 from .pwbm_task import PWBMTask
 from .example_task import ExampleTask
+from .version import __version__
