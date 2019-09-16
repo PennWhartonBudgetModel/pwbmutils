@@ -1,6 +1,9 @@
 """Collection of convenience functions for statistical work.
 """
 
+__author__ = 'Nick Janetos, Alex Arnon'
+__copyright__ = '2019 Penn Wharton Budget Model'
+
 # pylint: disable=E1101, C0103
 
 from copy import copy
@@ -136,7 +139,7 @@ class FullRank(object):
 
 		y ~ C(x, FullRank)
 
-	Code and comments from Nathaniel J. Smith, 
+	Code and comments from Nathaniel J. Smith (patsy dev), 
 	https://stackoverflow.com/questions/46832637/one-hot-encoding-in-patsy/
 	'''
 	def __init__(self, reference=0):
