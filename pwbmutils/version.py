@@ -2,4 +2,4 @@
 Specifies the current version of pwbmutils.
 '''
 
-__version__ = '0.99'
+__version__ = '0.991'
