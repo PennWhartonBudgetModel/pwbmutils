@@ -30,6 +30,8 @@ import time
 import luigi
 from luigi.contrib.hadoop import create_packages_archive
 import _pickle as pickle
+import hashlib
+
 
 logger = logging.getLogger("luigi-interface")
 logger.propagate = 0
@@ -148,10 +150,15 @@ class PWBMTask(luigi.Task):
 		if get_config_value("idempotent") == 1:
 			return task
 		else:
+			# compile to md5 hash
 			try:
-				dependencies = hash(tuple(task.requires()))
+				to_hash = tuple(task.requires())
+				m = hashlib.md5()
+				for i in to_hash:
+					m.update(i)
+				dependencies = m.hexdigest()
 			except TypeError:
-				dependencies = hash(task.requires())
+				dependencies = hashlib.md5(str(task.requires()).encode('utf-8')).hexdigest()
 		
 			return cls(**kwargs, _dependencies=dependencies)
 
