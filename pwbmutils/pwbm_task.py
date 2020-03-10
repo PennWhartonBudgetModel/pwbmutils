@@ -155,7 +155,7 @@ class PWBMTask(luigi.Task):
 				to_hash = tuple(task.requires())
 				m = hashlib.md5()
 				for i in to_hash:
-					m.update(i)
+					m.update(i.encode('utf-8'))
 				dependencies = m.hexdigest()
 			except TypeError:
 				dependencies = hashlib.md5(str(task.requires()).encode('utf-8')).hexdigest()
