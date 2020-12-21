@@ -1,7 +1,7 @@
 """Collection of convenience functions for statistical work.
 """
 
-__author__ = 'Nick Janetos, Alex Arnon'
+__author__ = 'Nick Janetos, Alex Arnon, Austin Herrick'
 __copyright__ = '2019 Penn Wharton Budget Model'
 
 # pylint: disable=E1101, C0103
@@ -9,6 +9,7 @@ __copyright__ = '2019 Penn Wharton Budget Model'
 from copy import copy
 import math
 import pickle
+import re
 
 from numba import njit
 import numpy
@@ -379,6 +380,14 @@ class LinearRegression(object):
 
 	def __init__(self, formula=None, data=None, **kwargs):
 
+		# convert all variables raised to a power to float64
+		# this prevents mis-specification of probabilities in cases of variable overflow 
+		# (if the original var was compressed to a smaller bit integer/float)
+		if data:
+			power_vars = list(set(re.findall(r'(?<=power\().+(?=,)', formula)))
+			for var in power_vars:
+				data[var] = data[var].astype('float64')
+
 		if formula:
 			y, X = patsy.dmatrices(formula, data, 1)
 
@@ -411,6 +420,16 @@ class LinearRegression(object):
 
 		if len(data) == 0:
 			return []
+
+		# identifies exponential variables from the design matrix (via the 'power' flag) and converts to float64
+		# this prevents mis-specification of probabilities in cases of variable overflow 
+		# (if the original var was compressed to a smaller bit integer/float)
+		power_vars = list(set([
+			re.search(r'(?<=power\().+(?=,)', column).group() for column in \
+			self._X_design_info.column_names if 'power' in column
+		]))
+		for var in power_vars:
+			data[var] = data[var].astype('float64')			
 
 		(X, ) = patsy.build_design_matrices([self._X_design_info], data)
 
