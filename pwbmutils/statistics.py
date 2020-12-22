@@ -187,6 +187,14 @@ class LogitRegression(object):
 
 	def __init__(self, formula=None, data=None, **kwargs):
 
+		# convert all variables raised to a power to float64
+		# this prevents mis-specification of probabilities in cases of variable overflow 
+		# (if the original var was compressed to a smaller bit integer/float)
+		if data:
+			power_vars = list(set(re.findall(r'(?<=power\().+(?=,)', formula)))
+			for var in power_vars:
+				data[var] = data[var].astype('float64')		
+
 		if formula:
 			y, X = patsy.dmatrices(formula, data, 1)
 			self._y_design_info = y.design_info
@@ -211,6 +219,16 @@ class LogitRegression(object):
 
 		if len(data) == 0:
 			return []
+
+		# identifies exponential variables from the design matrix (via the 'power' flag) and converts to float64
+		# this prevents mis-specification of probabilities in cases of variable overflow 
+		# (if the original var was compressed to a smaller bit integer/float)
+		power_vars = list(set([
+			re.search(r'(?<=power\().+(?=,)', column).group() for column in \
+			self._X_design_info.column_names if 'power' in column
+		]))
+		for var in power_vars:
+			data[var] = data[var].astype('float64')						
 
 		(X, ) = patsy.build_design_matrices([self._X_design_info], data)
 
@@ -289,6 +307,14 @@ class MultinomialRegression(object):
 
 	def __init__(self, formula=None, data=None, weights=None, **kwargs):
 
+		# convert all variables raised to a power to float64
+		# this prevents mis-specification of probabilities in cases of variable overflow 
+		# (if the original var was compressed to a smaller bit integer/float)
+		if data:
+			power_vars = list(set(re.findall(r'(?<=power\().+(?=,)', formula)))
+			for var in power_vars:
+				data[var] = data[var].astype('float64')
+
 		if formula:
 			y, X = patsy.dmatrices(formula, data, 1)
 			self._y_design_info = y.design_info
@@ -311,6 +337,16 @@ class MultinomialRegression(object):
 
 		if len(data) == 0:
 			return []
+
+		# identifies exponential variables from the design matrix (via the 'power' flag) and converts to float64
+		# this prevents mis-specification of probabilities in cases of variable overflow 
+		# (if the original var was compressed to a smaller bit integer/float)
+		power_vars = list(set([
+			re.search(r'(?<=power\().+(?=,)', column).group() for column in \
+			self._X_design_info.column_names if 'power' in column
+		]))
+		for var in power_vars:
+			data[var] = data[var].astype('float64')						
 
 		(X, ) = patsy.build_design_matrices([self._X_design_info], data)
 
