@@ -190,7 +190,7 @@ class LogitRegression(object):
 		# convert all variables raised to a power to float64
 		# this prevents mis-specification of probabilities in cases of variable overflow 
 		# (if the original var was compressed to a smaller bit integer/float)
-		if type(data) != pd.DataFrame:
+		if type(data) == pd.DataFrame:
 			power_vars = list(set(re.findall(r'(?<=power\().+(?=,)', formula)))
 			for var in power_vars:
 				data[var] = data[var].astype('float64')		
@@ -310,7 +310,7 @@ class MultinomialRegression(object):
 		# convert all variables raised to a power to float64
 		# this prevents mis-specification of probabilities in cases of variable overflow 
 		# (if the original var was compressed to a smaller bit integer/float)
-		if type(data) != pd.DataFrame:
+		if type(data) == pd.DataFrame:
 			power_vars = list(set(re.findall(r'(?<=power\().+(?=,)', formula)))
 			for var in power_vars:
 				data[var] = data[var].astype('float64')
@@ -419,7 +419,7 @@ class LinearRegression(object):
 		# convert all variables raised to a power to float64
 		# this prevents mis-specification of probabilities in cases of variable overflow 
 		# (if the original var was compressed to a smaller bit integer/float)
-		if type(data) != pd.DataFrame:
+		if type(data) == pd.DataFrame:
 			power_vars = list(set(re.findall(r'(?<=power\().+(?=,)', formula)))
 			for var in power_vars:
 				data[var] = data[var].astype('float64')
