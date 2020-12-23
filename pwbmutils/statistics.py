@@ -1,7 +1,7 @@
 """Collection of convenience functions for statistical work.
 """
 
-__author__ = 'Nick Janetos, Alex Arnon'
+__author__ = 'Nick Janetos, Alex Arnon, Austin Herrick'
 __copyright__ = '2019 Penn Wharton Budget Model'
 
 # pylint: disable=E1101, C0103
@@ -9,16 +9,17 @@ __copyright__ = '2019 Penn Wharton Budget Model'
 from copy import copy
 import math
 import pickle
+import re
 
 from numba import njit
-import numpy
-import pandas
+import numpy as np
+import pandas as pd
 import patsy
 from scipy.stats import norm
 from statsmodels.regression.linear_model import WLS
-numpy.warnings.filterwarnings("ignore")
+np.warnings.filterwarnings("ignore")
 from statsmodels.api import GLM
-numpy.warnings.resetwarnings()
+np.warnings.resetwarnings()
 from statsmodels.genmod.families.family import Binomial
 from statsmodels.genmod.families.links import logit
 from statsmodels.formula.api import mnlogit
@@ -30,14 +31,14 @@ def logit_transform(X, betas):
 	"""Performs a logistic transformation on data.
 
 	Arguments:
-		X {numpy.array} -- nxm numpy array.
-		betas {numpy.array} -- mx1 numpy array with coefficients.
+		X {np.array} -- nxm np array.
+		betas {np.array} -- mx1 np array with coefficients.
 
 	Returns:
-		numpy.array -- nx1 numpy array with logistic transformation applied.
+		np.array -- nx1 np array with logistic transformation applied.
 	"""
 
-	return 1 / (1 + numpy.exp(-1 * X @ betas))
+	return 1 / (1 + np.exp(-1 * X @ betas))
 
 
 @njit
@@ -45,11 +46,11 @@ def linear_transform(X, betas):
 	"""Performs a linear transformation on data.
 
 	Arguments:
-		X {numpy.array} -- nxm numpy array.
-		betas {numpy.array} -- mx1 numpy array with coefficients.
+		X {np.array} -- nxm np array.
+		betas {np.array} -- mx1 np array with coefficients.
 
 	Returns:
-		numpy.array -- nx1 numpy array with linear transformation applied.
+		np.array -- nx1 np array with linear transformation applied.
 	"""
 
 	return X @ betas
@@ -59,7 +60,7 @@ def inverse_mills_ratio(x, mu=0, sigma=1, invert=False):
 	"""Computes the inverse mills ratio of some data.
 
 	Arguments:
-		x {numpy.array} -- nx1 numpy array of data.
+		x {np.array} -- nx1 np array of data.
 
 	Keyword Arguments:
 		mu {int} -- The mean of the normal distribution. (default: {0})
@@ -67,7 +68,7 @@ def inverse_mills_ratio(x, mu=0, sigma=1, invert=False):
 		invert {bool} -- Which of two sides to compute, defaults to <=. (default: {False})
 
 	Returns:
-		numpy.array -- nx1 numpy array of transformed data
+		np.array -- nx1 np array of transformed data
 	"""
 
 	if not invert:
@@ -81,49 +82,49 @@ def weighted_quantile(values,
 					  sample_weight=None,
 					  values_sorted=False,
 					  old_style=False):
-	""" Very close to numpy.percentile, but supports weights.
-	Source: https://stackoverflow.com/questions/21844024/weighted-percentile-using-numpy
+	""" Very close to np.percentile, but supports weights.
+	Source: https://stackoverflow.com/questions/21844024/weighted-percentile-using-np
 	NOTE: quantiles should be in [0, 1]!
-	:param values: numpy.array with data
+	:param values: np.array with data
 	:param quantiles: array-like with many quantiles needed
 	:param sample_weight: array-like of the same length as `array`
 	:param values_sorted: bool, if True, then will avoid sorting of initial array
-	:param old_style: if True, will correct output to be consistent with numpy.percentile.
-	:return: numpy.array with computed quantiles.
+	:param old_style: if True, will correct output to be consistent with np.percentile.
+	:return: np.array with computed quantiles.
 	"""
-	values = numpy.array(values)
-	quantiles = numpy.array(quantiles)
+	values = np.array(values)
+	quantiles = np.array(quantiles)
 	if sample_weight is None:
-		sample_weight = numpy.ones(len(values))
-	sample_weight = numpy.array(sample_weight)
-	assert numpy.all(quantiles >= 0) and numpy.all(
+		sample_weight = np.ones(len(values))
+	sample_weight = np.array(sample_weight)
+	assert np.all(quantiles >= 0) and np.all(
 		quantiles <= 1), 'quantiles should be in [0, 1]'
 
 	if not values_sorted:
-		sorter = numpy.argsort(values)
+		sorter = np.argsort(values)
 		values = values[sorter]
 		sample_weight = sample_weight[sorter]
 
-	weighted_quantiles = numpy.cumsum(sample_weight) - 0.5 * sample_weight
+	weighted_quantiles = np.cumsum(sample_weight) - 0.5 * sample_weight
 	if old_style:
-		# To be convenient with numpy.percentile
+		# To be convenient with np.percentile
 		weighted_quantiles -= weighted_quantiles[0]
 		weighted_quantiles /= weighted_quantiles[-1]
 	else:
-		weighted_quantiles /= numpy.sum(sample_weight)
-	return numpy.interp(quantiles, weighted_quantiles, values)
+		weighted_quantiles /= np.sum(sample_weight)
+	return np.interp(quantiles, weighted_quantiles, values)
 
 
 def weighted_std(values, weights):
 	"""Return the weighted average and standard deviation.
 
-	values, weights -- Numpy ndarrays with the same shape.
+	values, weights -- np ndarrays with the same shape.
 
-	https://stackoverflow.com/questions/2413522/weighted-standard-deviation-in-numpy
+	https://stackoverflow.com/questions/2413522/weighted-standard-deviation-in-np
 	"""
-	average = numpy.average(values, weights=weights)
+	average = np.average(values, weights=weights)
 	# Fast and numerically precise:
-	variance = numpy.average((values - average)**2, weights=weights)
+	variance = np.average((values - average)**2, weights=weights)
 	return math.sqrt(variance)
 
 
@@ -148,7 +149,7 @@ class FullRank(object):
 	# Called to generate a full-rank encoding
 	def code_with_intercept(self, levels):
 		return ContrastMatrix(
-			numpy.eye(len(levels)),
+			np.eye(len(levels)),
 			['[My.%s]' % (level,) for level in levels]
 		)
 
@@ -178,13 +179,21 @@ class LogitRegression(object):
 
 	# return predicted probability of working for blacks
 	prob_works = model.predict(
-		pandas.DataFrame({
+		pd.DataFrame({
 			"Race": ["Black"]
 		})
 	)
 	"""
 
 	def __init__(self, formula=None, data=None, **kwargs):
+
+		# convert all variables raised to a power to float64
+		# this prevents mis-specification of probabilities in cases of variable overflow 
+		# (if the original var was compressed to a smaller bit integer/float)
+		if type(data) == pd.DataFrame:
+			power_vars = list(set(re.findall(r'(?<=power\().+(?=,)', formula)))
+			for var in power_vars:
+				data[var] = data[var].astype('float64')		
 
 		if formula:
 			y, X = patsy.dmatrices(formula, data, 1)
@@ -211,15 +220,25 @@ class LogitRegression(object):
 		if len(data) == 0:
 			return []
 
+		# identifies exponential variables from the design matrix (via the 'power' flag) and converts to float64
+		# this prevents mis-specification of probabilities in cases of variable overflow 
+		# (if the original var was compressed to a smaller bit integer/float)
+		power_vars = list(set([
+			re.search(r'(?<=power\().+(?=,)', column).group() for column in \
+			self._X_design_info.column_names if 'power' in column
+		]))
+		for var in power_vars:
+			data[var] = data[var].astype('float64')						
+
 		(X, ) = patsy.build_design_matrices([self._X_design_info], data)
 
 		if not linear:
 			return self._link.inverse(self._link(),
 									  linear_transform(
-										  numpy.asarray(X), self._betas))
+										  np.asarray(X), self._betas))
 
 		else:
-			return linear_transform(numpy.asarray(X), self._betas)
+			return linear_transform(np.asarray(X), self._betas)
 
 	def draw(self, data, rand_engine):
 
@@ -280,13 +299,21 @@ class MultinomialRegression(object):
 
 	# return predicted probability of working for blacks
 	prob_works = model.predict(
-		pandas.DataFrame({
+		pd.DataFrame({
 			"Race": ["Black"]
 		})
 	)
 	"""
 
 	def __init__(self, formula=None, data=None, weights=None, **kwargs):
+
+		# convert all variables raised to a power to float64
+		# this prevents mis-specification of probabilities in cases of variable overflow 
+		# (if the original var was compressed to a smaller bit integer/float)
+		if type(data) == pd.DataFrame:
+			power_vars = list(set(re.findall(r'(?<=power\().+(?=,)', formula)))
+			for var in power_vars:
+				data[var] = data[var].astype('float64')
 
 		if formula:
 			y, X = patsy.dmatrices(formula, data, 1)
@@ -311,31 +338,41 @@ class MultinomialRegression(object):
 		if len(data) == 0:
 			return []
 
+		# identifies exponential variables from the design matrix (via the 'power' flag) and converts to float64
+		# this prevents mis-specification of probabilities in cases of variable overflow 
+		# (if the original var was compressed to a smaller bit integer/float)
+		power_vars = list(set([
+			re.search(r'(?<=power\().+(?=,)', column).group() for column in \
+			self._X_design_info.column_names if 'power' in column
+		]))
+		for var in power_vars:
+			data[var] = data[var].astype('float64')						
+
 		(X, ) = patsy.build_design_matrices([self._X_design_info], data)
 
-		linear_transforms = numpy.asarray(X) @ numpy.asarray(self._betas)
+		linear_transforms = np.asarray(X) @ np.asarray(self._betas)
 
-		linear_transforms = numpy.concatenate(
-			[numpy.zeros((len(data), 1)), linear_transforms], axis=1)
+		linear_transforms = np.concatenate(
+			[np.zeros((len(data), 1)), linear_transforms], axis=1)
 
-		linear_transforms = numpy.exp(linear_transforms)
+		linear_transforms = np.exp(linear_transforms)
 
 		columns = self._y_design_info.column_names
 		is_true = ["True]" in i for i in columns]
 		columns = [c for c in columns if "True]" in c]
 
 
-		return pandas.DataFrame(
-			linear_transforms[:,is_true] / numpy.sum(
+		return pd.DataFrame(
+			linear_transforms[:,is_true] / np.sum(
 				linear_transforms, axis=1, keepdims=True),
 			columns=columns)
 
 	def draw(self, data, rand_engine):
 
 		prediction = self.predict(data).values.cumsum(axis=1)
-		prediction = numpy.append(prediction, numpy.ones((prediction.shape[0], 1)), axis=1)
+		prediction = np.append(prediction, np.ones((prediction.shape[0], 1)), axis=1)
 		random = rand_engine.uniform(size=(len(data), 1))
-		return numpy.argmax(prediction > random, axis=1)
+		return np.argmax(prediction > random, axis=1)
 
 	def to_pickle(self, filename):
 
@@ -379,6 +416,14 @@ class LinearRegression(object):
 
 	def __init__(self, formula=None, data=None, **kwargs):
 
+		# convert all variables raised to a power to float64
+		# this prevents mis-specification of probabilities in cases of variable overflow 
+		# (if the original var was compressed to a smaller bit integer/float)
+		if type(data) == pd.DataFrame:
+			power_vars = list(set(re.findall(r'(?<=power\().+(?=,)', formula)))
+			for var in power_vars:
+				data[var] = data[var].astype('float64')
+
 		if formula:
 			y, X = patsy.dmatrices(formula, data, 1)
 
@@ -388,7 +433,7 @@ class LinearRegression(object):
 			self._model = WLS(y, X, **kwargs)
 			self._fit = self._model.fit()
 			self._betas = self._fit.params
-			self._std = numpy.std(data[self._model.data.ynames].values - self.predict(data))
+			self._std = np.std(data[self._model.data.ynames].values - self.predict(data))
 			self._r2 = self._fit.rsquared
 			self._r2_adj = self._fit.rsquared_adj			
 		else:
@@ -412,9 +457,19 @@ class LinearRegression(object):
 		if len(data) == 0:
 			return []
 
+		# identifies exponential variables from the design matrix (via the 'power' flag) and converts to float64
+		# this prevents mis-specification of probabilities in cases of variable overflow 
+		# (if the original var was compressed to a smaller bit integer/float)
+		power_vars = list(set([
+			re.search(r'(?<=power\().+(?=,)', column).group() for column in \
+			self._X_design_info.column_names if 'power' in column
+		]))
+		for var in power_vars:
+			data[var] = data[var].astype('float64')			
+
 		(X, ) = patsy.build_design_matrices([self._X_design_info], data)
 
-		return linear_transform(numpy.asarray(X), self._betas)
+		return linear_transform(np.asarray(X), self._betas)
 
 	def residuals(self, data):
 		'''
