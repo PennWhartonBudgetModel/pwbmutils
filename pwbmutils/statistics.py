@@ -191,7 +191,7 @@ class LogitRegression(object):
 		# this prevents mis-specification of probabilities in cases of variable overflow 
 		# (if the original var was compressed to a smaller bit integer/float)
 		if type(data) == pd.DataFrame:
-			power_vars = list(set(re.findall(r'(?<=power\().+(?=,)', formula)))
+			power_vars = list(set(re.findall(r'(?<=power\().+?(?=,)', formula)))
 			for var in power_vars:
 				data[var] = data[var].astype('float64')		
 
@@ -224,7 +224,7 @@ class LogitRegression(object):
 		# this prevents mis-specification of probabilities in cases of variable overflow 
 		# (if the original var was compressed to a smaller bit integer/float)
 		power_vars = list(set([
-			re.search(r'(?<=power\().+(?=,)', column).group() for column in \
+			re.search(r'(?<=power\().+?(?=,)', column).group() for column in \
 			self._X_design_info.column_names if 'power' in column
 		]))
 		for var in power_vars:
@@ -311,7 +311,7 @@ class MultinomialRegression(object):
 		# this prevents mis-specification of probabilities in cases of variable overflow 
 		# (if the original var was compressed to a smaller bit integer/float)
 		if type(data) == pd.DataFrame:
-			power_vars = list(set(re.findall(r'(?<=power\().+(?=,)', formula)))
+			power_vars = list(set(re.findall(r'(?<=power\().+?(?=,)', formula)))
 			for var in power_vars:
 				data[var] = data[var].astype('float64')
 
@@ -342,7 +342,7 @@ class MultinomialRegression(object):
 		# this prevents mis-specification of probabilities in cases of variable overflow 
 		# (if the original var was compressed to a smaller bit integer/float)
 		power_vars = list(set([
-			re.search(r'(?<=power\().+(?=,)', column).group() for column in \
+			re.search(r'(?<=power\().+?(?=,)', column).group() for column in \
 			self._X_design_info.column_names if 'power' in column
 		]))
 		for var in power_vars:
@@ -413,7 +413,7 @@ class LinearRegression(object):
 		# this prevents mis-specification of probabilities in cases of variable overflow 
 		# (if the original var was compressed to a smaller bit integer/float)
 		if type(data) == pd.DataFrame:
-			power_vars = list(set(re.findall(r'(?<=power\().+(?=,)', formula)))
+			power_vars = list(set(re.findall(r'(?<=power\().+?(?=,)', formula)))
 			for var in power_vars:
 				data[var] = data[var].astype('float64')
 
@@ -454,7 +454,7 @@ class LinearRegression(object):
 		# this prevents mis-specification of probabilities in cases of variable overflow 
 		# (if the original var was compressed to a smaller bit integer/float)
 		power_vars = list(set([
-			re.search(r'(?<=power\().+(?=,)', column).group() for column in \
+			re.search(r'(?<=power\().+?(?=,)', column).group() for column in \
 			self._X_design_info.column_names if 'power' in column
 		]))
 		for var in power_vars:
