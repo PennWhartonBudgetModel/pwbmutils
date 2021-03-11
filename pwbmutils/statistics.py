@@ -2,7 +2,7 @@
 """
 
 __author__ = 'Nick Janetos, Alex Arnon, Austin Herrick'
-__copyright__ = '2019 Penn Wharton Budget Model'
+__copyright__ = '2021 Penn Wharton Budget Model'
 
 # pylint: disable=E1101, C0103
 
