@@ -191,7 +191,7 @@ class LogitRegression(object):
 		# this prevents mis-specification of probabilities in cases of variable overflow 
 		# (if the original var was compressed to a smaller bit integer/float)
 		if type(data) == pd.DataFrame:
-			power_vars = list(set(re.findall(r'(?<=power\().+(?=,)', formula)))
+			power_vars = list(set(re.findall(r'(?<=power\().+?(?=,)', formula)))
 			for var in power_vars:
 				data[var] = data[var].astype('float64')		
 
@@ -224,7 +224,7 @@ class LogitRegression(object):
 		# this prevents mis-specification of probabilities in cases of variable overflow 
 		# (if the original var was compressed to a smaller bit integer/float)
 		power_vars = list(set([
-			re.search(r'(?<=power\().+(?=,)', column).group() for column in \
+			re.search(r'(?<=power\().+?(?=,)', column).group() for column in \
 			self._X_design_info.column_names if 'power' in column
 		]))
 		for var in power_vars:
@@ -311,7 +311,7 @@ class MultinomialRegression(object):
 		# this prevents mis-specification of probabilities in cases of variable overflow 
 		# (if the original var was compressed to a smaller bit integer/float)
 		if type(data) == pd.DataFrame:
-			power_vars = list(set(re.findall(r'(?<=power\().+(?=,)', formula)))
+			power_vars = list(set(re.findall(r'(?<=power\().+?(?=,)', formula)))
 			for var in power_vars:
 				data[var] = data[var].astype('float64')
 
@@ -342,7 +342,7 @@ class MultinomialRegression(object):
 		# this prevents mis-specification of probabilities in cases of variable overflow 
 		# (if the original var was compressed to a smaller bit integer/float)
 		power_vars = list(set([
-			re.search(r'(?<=power\().+(?=,)', column).group() for column in \
+			re.search(r'(?<=power\().+?(?=,)', column).group() for column in \
 			self._X_design_info.column_names if 'power' in column
 		]))
 		for var in power_vars:
@@ -350,22 +350,15 @@ class MultinomialRegression(object):
 
 		(X, ) = patsy.build_design_matrices([self._X_design_info], data)
 
-		linear_transforms = np.asarray(X) @ np.asarray(self._betas)
-
+		# apply betas to data
+		linear_transforms = linear_transform(np.asarray(X), np.asarray(self._betas))
 		linear_transforms = np.concatenate(
 			[np.zeros((len(data), 1)), linear_transforms], axis=1)
-
 		linear_transforms = np.exp(linear_transforms)
 
-		columns = self._y_design_info.column_names
-		is_true = ["True]" in i for i in columns]
-		columns = [c for c in columns if "True]" in c]
+		rescaled_data = pd.DataFrame(linear_transforms / np.sum(linear_transforms, axis=1, keepdims=True))
 
-
-		return pd.DataFrame(
-			linear_transforms[:,is_true] / np.sum(
-				linear_transforms, axis=1, keepdims=True),
-			columns=columns)
+		return rescaled_data	
 
 	def draw(self, data, rand_engine):
 
@@ -420,7 +413,7 @@ class LinearRegression(object):
 		# this prevents mis-specification of probabilities in cases of variable overflow 
 		# (if the original var was compressed to a smaller bit integer/float)
 		if type(data) == pd.DataFrame:
-			power_vars = list(set(re.findall(r'(?<=power\().+(?=,)', formula)))
+			power_vars = list(set(re.findall(r'(?<=power\().+?(?=,)', formula)))
 			for var in power_vars:
 				data[var] = data[var].astype('float64')
 
@@ -461,7 +454,7 @@ class LinearRegression(object):
 		# this prevents mis-specification of probabilities in cases of variable overflow 
 		# (if the original var was compressed to a smaller bit integer/float)
 		power_vars = list(set([
-			re.search(r'(?<=power\().+(?=,)', column).group() for column in \
+			re.search(r'(?<=power\().+?(?=,)', column).group() for column in \
 			self._X_design_info.column_names if 'power' in column
 		]))
 		for var in power_vars:
